@@ -28,10 +28,10 @@
 #include "lib/rmc.hpp"
 
 #define NULL_STR ""
-#define VERSION_CODE__KRR 8
-#define VERSION_NAME__KRR "0.0.8"
+#define VERSION_CODE__KRR 10
+#define VERSION_NAME__KRR "0.1.0"
 #define defretvarname "return"
-
+#define defargvarname "argument"
 enum __vawer { CU_SPI , CU_SI, /* === */   CE_SPI , CE_SI};
 enum VSID{ stringV, runV, intV, hexV, nullV };
 std::string get_sname_from_vname(VSID VNAME){

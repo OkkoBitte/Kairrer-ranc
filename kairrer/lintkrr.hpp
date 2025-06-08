@@ -2,7 +2,7 @@
 vars kairrer(std::string code,std::vector<std::string> argm){
     std::vector<TOKENS> tokens = tokenizer(code);
     urwerer state;
-    Parser parser(tokens, state);
+    kairrer_tpr ktpr(tokens, state);
     std::vector<vars> varsarg;
     std::string args;
     int argi=1;
@@ -21,8 +21,27 @@ vars kairrer(std::string code,std::vector<std::string> argm){
     nware.valib.value=args;
     varsarg.push_back(nware);
     
+
+    vars AP;
+    AP.name = "AP";
+    AP.valib.type = VSID::intV;
+    AP.valib.value = "1";
+    varsarg.push_back(AP);
+
+    vars BIN;
+    BIN.name = "BIN";
+    BIN.valib.type = VSID::intV;
+    BIN.valib.value = "0";
+    varsarg.push_back(BIN);
+
+    vars FO;
+    FO.name = "FO";
+    FO.valib.type = VSID::intV;
+    FO.valib.value = "-1";
+    varsarg.push_back(FO);
+
     vars return_var;
-    std::vector<vars> retvars = parser.prun(varsarg);
+    std::vector<vars> retvars = ktpr.prun(varsarg);
     for(auto retvar : retvars){
         if (retvar.name == defretvarname) return_var = retvar;
     }
