@@ -100,9 +100,32 @@ class kairrer_tpr {
             }
         }
         
-        if (nest_level != 0) {
-            log.fkr("GG","li dreban ant -> } "+line_pin());
+        if (nest_level != 0) log.fkr("GG","li dreban ant -> } "+line_pin());
+        
+        
+        return value;
+    }
+    std::string lixtPP(){
+        std::string value;
+        int nest_level = 1; 
+        cret(); 
+        
+        while (!vaZexc() && nest_level > 0) {
+            if (vadap(TSID::PE)) { 
+                nest_level++;
+                value += cret().value;
+            } 
+            else if (vadap(TSID::PU)) {
+                nest_level--;
+                if (nest_level > 0) value += cret().value;
+            }
+            else {
+                value += cret().value;
+            }
         }
+        
+        if (nest_level != 0) log.fkr("PP","li dreban ant -> ) "+line_pin());
+        
         
         return value;
     }
@@ -140,6 +163,67 @@ class kairrer_tpr {
         while (vap < tokens.size() && (vadap(TSID::STRING) ||vadap(TSID::INT)))stringData+= cret().value;    
         return stringData;
     }
+    
+    value       lixtESVA(){
+        cret();
+        value re_value;
+        re_value.va_ap = true;
+        re_value.type  = intV;
+        re_value.value = BIN__KRR;
+        
+        bool vaFen = false;
+
+        auto krrsen = [&](std::string vaaiz){
+            value krrval;
+            krrval.type  = nullV;
+            krrval.va_ap = false;
+            krrval.value = NULL_STR;
+            log.krr(vaaiz + line_pin());
+            return krrval;
+        };
+
+        if(esValue()){
+            std::string varname = lixtSTRINT();
+            auto vavar = state.getVariable(varname);
+            if (vavar &&
+                 vavar->valib.va_ap &&
+                  vavar->valib.value == AP__KRR) {
+                    vaFen = true; re_value.value = AP__KRR;
+                }
+            else re_value.value = FO__KRR;
+            
+        }
+        else return esvaWer();
+        skipTAB();
+        
+        if (vadap(CE)){
+            cret();skipTAB();
+            value runvalue = lixtVALUE();
+            if(vaFen){
+                if (runvalue.type==VSID::runV){
+                    std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
+                    urwerer cp_state = state;
+                    kairrer_tpr ktpr(tokensrunvs, cp_state);
+            
+                    re_value.type = runV;
+                    re_value.rargs = ktpr.prun(runvalue.rargs);
+                    for (auto retvar : re_value.rargs) {
+                        if (retvar.name == defretvarname) {
+                            re_value.type = retvar.valib.type;
+                            re_value.value = retvar.valib.value;
+                        }
+                    }
+                    
+                }
+                else return krrsen("VALUE et fo eplist ret <runV> ");
+            }
+            
+        }
+        
+        
+
+        return re_value;
+    }
     value       lixtVALUE(){
         value vlib;
         if(vadap(TSID::S)){
@@ -160,7 +244,8 @@ class kairrer_tpr {
             // 0x
             vlib.value=lixtINT();
         }
-
+        else if (vadap(TSID::VA)) vlib=lixtESVA();
+        
         else if (vadap(TSID::STRING))  vlib=varWer().valib;
         
         else if (dapin(TSID::DIG) && lift().type==TSID::DIG) {
@@ -270,7 +355,248 @@ class kairrer_tpr {
         
     }
     
+    value       esvaWer(){
+        enum class vaesvawer { NDEK, CE, CU, DEZ };
+        value retval;
+        bool en_esva = false;
+        retval.va_ap = true;
+        retval.value = BIN__KRR;
+        auto mfolib = [&](std::string glib){
+            log.fkr("ESVA",glib+" "+line_pin());
+            
+            retval.value = FO__KRR;
+            retval.va_ap = false;
 
+            return retval;
+        };
+        auto folib = [&](std::string glib){
+            log.krr(glib+" "+line_pin());
+            
+            retval.value = FO__KRR;
+            retval.va_ap = false;
+
+            return retval;
+        };
+        vaesvawer vawer;
+
+        cret();
+        if (esValue()){
+            value eifvalue = lixtVALUE();  // ( >value1< ?= value2 )
+            value urfvalue ;
+            skipTAB();
+
+            if (vadap(PU)){
+                cret();
+                if(eifvalue.va_ap == true && eifvalue.value == AP__KRR) {
+                    retval.value = AP__KRR;
+                    en_esva = true;
+                }
+                skipTAB();
+                
+                if (vadap(CE)){
+                    cret();skipTAB();
+                    value runvalue = lixtVALUE();
+                    if(en_esva){
+                        if (runvalue.type==VSID::runV){
+                            std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
+                            urwerer cp_state = state;
+                            kairrer_tpr ktpr(tokensrunvs, cp_state);
+                            retval.type = runV;
+                            retval.rargs = ktpr.prun(runvalue.rargs);
+                            for (auto retvar : retval.rargs) {
+                                if (retvar.name == defretvarname) {
+                                    retval.type = retvar.valib.type;
+                                    retval.value = retvar.valib.value;
+                                }
+                                state.addVariable(retvar);
+                            }
+                            
+                        }
+                        else return folib("VALUE et fo eplist ret <runV> ");
+                    }
+                }
+            
+                
+                return retval; // ?(only)
+            }
+
+
+            // ( value1 > ?= < value2 )
+            if(dapin(VA)){ // (?)
+                if     (vadap(NDEK)){  // (=)
+                    vawer = vaesvawer::NDEK; cret();
+                }
+                else if (vadap(CE)){   // (<)
+                    vawer = vaesvawer::CE; cret();
+                }
+                else if (vadap(CU)){   // (>)
+                    vawer = vaesvawer::CU; cret();
+                }
+                else if (vadap(DEZ)){  // (!)
+                    vawer = vaesvawer::DEZ; cret();
+                }
+                else return mfolib("vah sim et -> '"+lixt().value+"'");
+            } 
+            else return mfolib("vah sim et -> '"+lixt().value+"'");
+            skipTAB();
+            // ( value1 ?= >value2< )  
+
+            if (esValue()) urfvalue = lixtVALUE();
+            else return mfolib("vah sim  et -> '"+lixt().value+"'");
+
+            if (vawer == vaesvawer::NDEK){ // AME
+
+                if (eifvalue.type == runV || urfvalue.type == runV){
+                    retval.va_ap = false;
+                    retval.value = FO__KRR;
+                    log.cev("fo wer ten esvaweren var ret <runV>");
+                }
+                else{
+                    if (eifvalue.value == urfvalue.value) retval.value = AP__KRR;
+                    else {
+                        retval.va_ap = false;
+                        retval.value = FO__KRR;
+                    }
+                }
+                
+            }
+            else if (vawer == vaesvawer::CE || vawer == vaesvawer::CU){
+
+                auto esva_hiower = [](const auto& a, const auto& b, vaesvawer op) {
+                    if (op == vaesvawer::CE) return a < b;
+                    else return a > b;
+                };
+
+                if (eifvalue.type == intV && urfvalue.type == intV){
+                    int v1 = atoi(eifvalue.value.c_str());
+                    int v2 = atoi(urfvalue.value.c_str());
+
+                    if(esva_hiower(v1,v2,vawer)) retval.value = AP__KRR;
+                    else{
+                        retval.va_ap = false;
+                        retval.value = FO__KRR;
+                    }
+                }
+                else if (eifvalue.type == intV && urfvalue.type == stringV ){
+                    
+                    bool gatstr = false; 
+                    int v1 = atoi(eifvalue.value.c_str());
+                    int v2;
+                    
+                    try{ v2 = atoi(urfvalue.value.c_str()); }
+                    catch(...){ gatstr = true; }
+
+                    if (gatstr){
+                        if (esva_hiower(eifvalue.value.size() ,urfvalue.value.size(),vawer)) retval.value = AP__KRR;
+                        else{
+                            eifvalue.va_ap = false;
+                            eifvalue.value = FO__KRR;
+                        }
+                    }
+                    else{
+                        if(esva_hiower(v1,v2,vawer)) retval.value = AP__KRR;
+                        else{
+                            retval.va_ap = false;
+                            retval.value = FO__KRR;
+                        }
+                    }
+                    
+
+                }
+                else if (eifvalue.type == stringV && urfvalue.type == intV ){
+                    
+                    bool gatstr = false; 
+                    int v1 ;
+                    int v2 = atoi(eifvalue.value.c_str());
+                    
+                    try{ v1 = atoi(urfvalue.value.c_str()); }
+                    catch(...){ gatstr = true; }
+
+                    if (gatstr){
+                        if (esva_hiower(eifvalue.value.size() ,urfvalue.value.size(),vawer)) retval.value = AP__KRR;
+                        else{
+                            eifvalue.va_ap = false;
+                            eifvalue.value = FO__KRR;
+                        }
+                    }
+                    else{
+                        if(v1<v2) retval.value = AP__KRR;
+                        else{
+                            retval.va_ap = false;
+                            retval.value = FO__KRR;
+                        }
+                    }
+                    
+
+                }
+                else if (eifvalue.type == runV || urfvalue.type == runV){
+                    retval.va_ap = false;
+                    retval.value = FO__KRR;
+                    log.cev("fo wer ten esvaweren var ret <runV>");
+                }
+                else if (eifvalue.type == nullV || urfvalue.type == nullV){
+
+                    if (eifvalue.type == nullV && urfvalue.type == nullV) retval.value = AP__KRR;
+                    else{
+                        retval.va_ap = false;
+                        retval.value = FO__KRR;
+                    }
+                }
+            }
+            else if (vawer == vaesvawer::DEZ){
+                   if (eifvalue.type == runV || urfvalue.type == runV){
+                    retval.va_ap = false;
+                    retval.value = FO__KRR;
+                    log.cev("fo wer ten esvaweren var ret <runV>");
+                }
+                else{
+                    if (eifvalue.value != urfvalue.value) retval.value = AP__KRR;
+                    else {
+                        retval.va_ap = false;
+                        retval.value = FO__KRR;
+                    }
+                }
+            }
+            
+        
+        }
+        else return mfolib("vah sim et -> '"+lixt().value+"'");
+    
+        skipTAB();
+
+        if(vadap(PU)){
+            cret();
+            skipTAB();
+            
+            if (vadap(CE)){
+                cret();skipTAB();
+                value runvalue = lixtVALUE();
+                if(retval.va_ap&&retval.value == AP__KRR){
+                    if (runvalue.type==VSID::runV){
+                        std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
+                        urwerer cp_state = state;
+                        kairrer_tpr ktpr(tokensrunvs, cp_state);
+                        retval.type = runV;
+                        retval.rargs = ktpr.prun(runvalue.rargs);
+                        for (auto retvar : retval.rargs) {
+                            if (retvar.name == defretvarname) {
+                                retval.type = retvar.valib.type;
+                                retval.value = retvar.valib.value;
+                            }
+                            state.addVariable(retvar);
+                        }
+                        
+                    }
+                    else return folib("VALUE et fo eplist ret <runV> ");
+                }
+            }
+        
+            
+     
+        }
+
+        return retval;
+    }
     vars        reVarWer (vars donner, vars akcepter){
         // akcepter < donner ;
         
@@ -460,27 +786,6 @@ class kairrer_tpr {
                 retvar.valib.type = stringV;
                 retvar.valib.value = vurf.valib.value + veif.valib.value;
             }
-            else if (er == intV && ur == hexV) {
-                int veifInt = stoi(veif.valib.value);
-                int vurfInt = stoi(vurf.valib.value, 0, 16);
-                int result = veifInt + vurfInt;
-                retvar.valib.type = hexV;
-                retvar.valib.value = "0x" + std::to_string(result);
-            }
-            else if (er == hexV && ur == intV) {
-                int veifInt = stoi(veif.valib.value, 0, 16);
-                int vurfInt = stoi(vurf.valib.value);
-                int result = veifInt + vurfInt;
-                retvar.valib.type = hexV;
-                retvar.valib.value = "0x" + std::to_string(result);
-            }
-            else if (er == hexV && ur == hexV) {
-                int veifInt = stoi(veif.valib.value, 0, 16);
-                int vurfInt = stoi(vurf.valib.value, 0, 16);
-                int result = veifInt + vurfInt;
-                retvar.valib.type = hexV;
-                retvar.valib.value = "0x" + std::to_string(result);
-            }
             else if (ur == runV) {
                 log.krr("fatneir wer <+,+>  ten ret 'runV' "+line_pin());
                 retvar.valib.va_ap =false;
@@ -511,27 +816,6 @@ class kairrer_tpr {
             else if (er == stringV && ur == stringV) {
                 retvar.valib.type = stringV;
                 retvar.valib.value = veif.valib.value + vurf.valib.value;
-            }
-            else if (er == intV && ur == hexV) {
-                int veifInt = stoi(veif.valib.value);
-                int vurfInt = stoi(vurf.valib.value, 0, 16);
-                int result = veifInt + vurfInt;
-                retvar.valib.type = intV; 
-                retvar.valib.value = std::to_string(result);
-            }
-            else if (er == hexV && ur == intV) {
-                int veifInt = stoi(veif.valib.value, 0, 16);
-                int vurfInt = stoi(vurf.valib.value);
-                int result = veifInt + vurfInt;
-                retvar.valib.type = hexV;
-                retvar.valib.value = "0x" + std::to_string(result);
-            }
-            else if (er == hexV && ur == hexV) {
-                int veifInt = stoi(veif.valib.value, 0, 16);
-                int vurfInt = stoi(vurf.valib.value, 0, 16);
-                int result = veifInt + vurfInt;
-                retvar.valib.type = hexV;
-                retvar.valib.value = "0x" + std::to_string(result);
             }
             else if (er == runV) {
                 log.krr("fatneir wer <+,+>  ten ret 'runV' "+line_pin());
@@ -624,6 +908,7 @@ class kairrer_tpr {
                             varlib.valib.type = retvar.valib.type;
                             varlib.valib.value = retvar.valib.value;
                         }
+                        state.addVariable(retvar);
                     }
     
                     if (vasavemy && saveToState) state.addVariable(varlib);
@@ -1112,6 +1397,7 @@ class kairrer_tpr {
                         varlib.valib.type = retvar.valib.type;
                         varlib.valib.value = retvar.valib.value;
                     }
+                    state.addVariable(retvar);
                 }
             
             };
@@ -1155,10 +1441,7 @@ class kairrer_tpr {
                     if (varh){
                         varlib.valib.value = std::to_string( varh->valib.value.size()); 
                         VSID vtype = varh->valib.type;
-                        if( vtype  == VSID::hexV){
-                            varlib.valib.value = std::to_string( atoi(varh->valib.value.c_str()) ); 
-                        }
-                        else if (vtype  == VSID::intV){
+                        if (vtype  == VSID::intV){
                             varlib.valib.value = std::to_string( atoi(varh->valib.value.c_str()) ); 
                         }
                         else if(vtype == VSID::nullV){
@@ -1250,12 +1533,15 @@ class kairrer_tpr {
         while (!vaZexc()) {
             try {
                 //var     
-                     if (vadap(TSID::STRING)) {varWer();}
+                     if (vadap(TSID::STRING)) varWer();
                 // else if (esValue()){}
                 
                 //import
-                else if (vadap(TSID::SY))     {addLiber(state.lixtLiber(lixtPathLiber()));}
+                else if (vadap(TSID::SY))     addLiber(state.lixtLiber(lixtPathLiber()));
                 
+                //va
+                else if (vadap(TSID::VA))  lixtESVA();
+
                 //comes
                 else if (dapin(TSID::DREB))   {skipTAB(); if(dapin(CE)){skipTAB();if(vadap(STRING)){state.removeVariable(varWer().name); } skipLINE(); }else skipLINE(); }
                 else if (dapin(TSID::DYR) && lift().type==TSID::DYR) skipLINE();

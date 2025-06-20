@@ -28,24 +28,26 @@
 #include "lib/rmc.hpp"
 
 #define NULL_STR ""
-#define VERSION_CODE__KRR 12
-#define VERSION_NAME__KRR "0.1.1-2"
-#define defretvarname "return"
-#define defargvarname "argument"
+#define VERSION_CODE__KRR 14
+#define VERSION_NAME__KRR "0.1.2"
 
-static constexpr const char* AP__KRR  = "1";
-static constexpr const char* BIN__KRR = "0";
-static constexpr const char* FO__KRR  = "-1";
+
+
+
+static constexpr const char* defretvarname = "return";
+static constexpr const char* defargvarname = "argument";
+static constexpr const char* AP__KRR       = "1";
+static constexpr const char* BIN__KRR      = "0";
+static constexpr const char* FO__KRR       = "-1";
 
 enum __vawer { CU_SPI , CU_SI, /* === */   CE_SPI , CE_SI};
-enum VSID{ stringV, runV, intV, hexV, nullV };
+enum VSID{ stringV, runV, intV, nullV };
 
 std::string get_sname_from_vname(VSID VNAME){
     std::string return_vname="<fater>";
     
     if     (VNAME == stringV)  return_vname = "<stringV>";
     else if(VNAME == intV)     return_vname = "<intV>";
-    else if(VNAME == hexV)     return_vname = "<hexV>";
     else if(VNAME == runV)     return_vname = "<runV>";
     else if(VNAME == nullV)    return_vname = "<nullV>";
 

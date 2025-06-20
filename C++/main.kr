@@ -1,18 +1,18 @@
 ~"libkr/io";
 
-filename : "testy"
+filename : "test"
 
-testy: fwrite < filename **;                       // создаем экземпляр функции "fwrite" и туда же передаем аргумент "filename" // сохраняем выполнение в эту переменную через оператор "выполнить сохранить в себя" **
+testy: fwrite < filename **;                       
 
-testy < "uint64_dddt" ;                           // дале, testy хронит число дескриптора, и если попробовать перенаправить туда данные, то он запишется с начала в дескриптор.
+testy < "uint64_dddt" ;                           
 
-fclose < desc : testy *;                           // передать открытый экземпляр в 'fclose' // закрыть файл
+fclose < desc : testy *;                           
 
-resultOpen : fread < filename **;                  // создаем экземпляр "fread"  туда же передаем имя файла  // сохраняем выполнение в эту переменную через оператор "выполнить сохранить в себя" **
+resultOpen : fread < filename **;                  
 
-resultOpen > textFile;                             // передаем полученные данные в пустую переменную
+resultOpen > textFile;                             
 
-//__echo @textFile__                               // выводим данные на экран 
+__echo @textFile__                               
 
 ~"libkr/hello"
 ~"libkr/tcc"
@@ -41,3 +41,7 @@ int2: 20;
 resultSumInts:int1 <+ int2;
 
 __echo "Result @int1 + @int2 = @resultSumInts"__
+
+
+?(AP ?= FO) < {} // fo werun
+?AP < { __ echo TRUE!__ } // werap
