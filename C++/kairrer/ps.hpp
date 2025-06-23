@@ -5,7 +5,9 @@ class kairrer_tpr {
     urwerer::HexExecutor hexcode;
     size_t vap = 0;
     urwerer::LOG log;
-
+    enum class vaneWerTenESVA {
+        CINCIO, FENER
+    };
     const TOKENS& lift() { return tokens[vap--]; } 
     const TOKENS& cret() { return tokens[vap++]; }
     const TOKENS& lixt() const { return tokens[vap]; } 
@@ -25,14 +27,12 @@ class kairrer_tpr {
         lift();
         return false;
     }
-    bool esValue(){
-        return vadap(INT) || vadap(SI) || vadap(STRING) || vadap(S) || vadap(SS) || vadap(GE);
-    }
+    bool esValue(){ return vadap(INT) || vadap(SI) || vadap(STRING) || vadap(S) || vadap(SS) || vadap(GE) || vadap(VA); }
 
     void skipTAB(){while(vadap(TSID::TAB))cret();} 
     void skipLINE(){while(!dapin(TSID::INGOR) &&!vaZexc())cret();}
     void echoLIXT(){ std::cout<<"'"<<lixt().value<<"'"<<std::endl;} 
-    int  getLINE(){
+    int  getLINE() {
         int newpin = vap;
         int lines = 1;
         while(newpin != 0){
@@ -41,7 +41,7 @@ class kairrer_tpr {
         }
         return lines;
     }
-    int getSINE() {
+    int  getSINE() {
         int newpin = vap;
         int sims = 0;
         while (newpin != 0 && tokens[newpin].type!=INGOR){
@@ -164,7 +164,7 @@ class kairrer_tpr {
         return stringData;
     }
     
-    value       lixtESVA(){
+    value       lixtESVA(vaneWerTenESVA varetist){
         cret();
         value re_value;
         re_value.va_ap = true;
@@ -182,43 +182,48 @@ class kairrer_tpr {
             return krrval;
         };
 
-        if(esValue()){
-            std::string varname = lixtSTRINT();
-            auto vavar = state.getVariable(varname);
-            if (vavar &&
-                 vavar->valib.va_ap &&
-                  vavar->valib.value == AP__KRR) {
-                    vaFen = true; re_value.value = AP__KRR;
-                }
-            else re_value.value = FO__KRR;
-            
-        }
-        else return esvaWer();
-        skipTAB();
-        
-        if (vadap(CE)){
-            cret();skipTAB();
-            value runvalue = lixtVALUE();
-            if(vaFen){
-                if (runvalue.type==VSID::runV){
-                    std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
-                    urwerer cp_state = state;
-                    kairrer_tpr ktpr(tokensrunvs, cp_state);
-            
-                    re_value.type = runV;
-                    re_value.rargs = ktpr.prun(runvalue.rargs);
-                    for (auto retvar : re_value.rargs) {
-                        if (retvar.name == defretvarname) {
-                            re_value.type = retvar.valib.type;
-                            re_value.value = retvar.valib.value;
-                        }
+
+        if(varetist == vaneWerTenESVA::FENER){
+            if(vadap(STRING)){
+                std::string varname = lixtSTRINT();
+                auto vavar = state.getVariable(varname);
+                if (vavar &&
+                    vavar->valib.va_ap &&
+                    vavar->valib.value == AP__KRR) {
+                        vaFen = true; re_value.value = AP__KRR;
                     }
-                    
-                }
-                else return krrsen("VALUE et fo eplist ret <runV> ");
+                else re_value.value = FO__KRR;
+                
             }
+            else return esvaWer(vaneWerTenESVA::FENER);
+            skipTAB();
             
+            if (vadap(CE)){
+                cret();skipTAB();
+                value runvalue = lixtVALUE();
+                if(vaFen){
+                    if (runvalue.type==VSID::runV){
+                        std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
+                        urwerer cp_state = state;
+                        kairrer_tpr ktpr(tokensrunvs, cp_state);
+                
+                        re_value.type = runV;
+                        re_value.rargs = ktpr.prun(runvalue.rargs);
+                        for (auto retvar : re_value.rargs) {
+                            if (retvar.name == defretvarname) {
+                                re_value.type = retvar.valib.type;
+                                re_value.value = retvar.valib.value;
+                            } state.addVariable(retvar);
+                        }
+                        
+                    }
+                    else return krrsen("VALUE et fo eplist ret <runV> ");
+                }
+                
+            }
         }
+        else return esvaWer(vaneWerTenESVA::CINCIO);
+        
         
         
 
@@ -244,7 +249,7 @@ class kairrer_tpr {
             // 0x
             vlib.value=lixtINT();
         }
-        else if (vadap(TSID::VA)) vlib=lixtESVA();
+        else if (vadap(TSID::VA)) vlib=lixtESVA(vaneWerTenESVA::FENER);
         
         else if (vadap(TSID::STRING))  vlib=varWer().valib;
         
@@ -355,7 +360,7 @@ class kairrer_tpr {
         
     }
     
-    value       esvaWer(){
+    value       esvaWer(vaneWerTenESVA varetist){ // ( 
         enum class vaesvawer { NDEK, CE, CU, DEZ };
         value retval;
         bool en_esva = false;
@@ -378,11 +383,20 @@ class kairrer_tpr {
             return retval;
         };
         vaesvawer vawer;
-
-        cret();
+        cret();skipTAB();
+        
         if (esValue()){
-            value eifvalue = lixtVALUE();  // ( >value1< ?= value2 )
-            value urfvalue ;
+            std::string varname = NULL_STR;
+            value eifvalue;
+            value urfvalue;
+            
+            if(vadap(STRING)){
+                vars lixtVarLib = varWer();
+                varname = lixtVarLib.name;
+                eifvalue = lixtVarLib.valib;
+            }
+            else eifvalue = lixtVALUE();  // ( >value1< ?= value2 )
+      
             skipTAB();
 
             if (vadap(PU)){
@@ -393,31 +407,70 @@ class kairrer_tpr {
                 }
                 skipTAB();
                 
-                if (vadap(CE)){
-                    cret();skipTAB();
-                    value runvalue = lixtVALUE();
-                    if(en_esva){
-                        if (runvalue.type==VSID::runV){
-                            std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
-                            urwerer cp_state = state;
-                            kairrer_tpr ktpr(tokensrunvs, cp_state);
-                            retval.type = runV;
-                            retval.rargs = ktpr.prun(runvalue.rargs);
-                            for (auto retvar : retval.rargs) {
-                                if (retvar.name == defretvarname) {
-                                    retval.type = retvar.valib.type;
-                                    retval.value = retvar.valib.value;
+                if (vadap(CE)||esValue()){
+                    if(vadap(GE) || vadap(CE)){
+                        if (vadap(CE))cret();
+                        skipTAB();
+                        value runvalue = lixtVALUE();
+                        if(en_esva){
+                            if (runvalue.type==VSID::runV){
+                                std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
+                                urwerer cp_state = state;
+                                kairrer_tpr ktpr(tokensrunvs, cp_state);
+                                retval.type = runV;
+                                if(varetist == vaneWerTenESVA::FENER){ 
+                                    retval.rargs = ktpr.prun(runvalue.rargs);
+                                    for (auto retvar : retval.rargs) {
+                                        if (retvar.name == defretvarname) {
+                                            retval.type = retvar.valib.type;
+                                            retval.value = retvar.valib.value;
+                                        } state.addVariable(retvar);
+                                    }
                                 }
-                                state.addVariable(retvar);
+                                else if(varetist == vaneWerTenESVA::CINCIO){
+                                    if(varname == NULL_STR){
+                                        while (true){
+                                            urwerer cp_state = state;
+                                            kairrer_tpr ktpr(tokensrunvs, cp_state);
+                                            retval.rargs = ktpr.prun(runvalue.rargs);
+                                            for (auto retvar : retval.rargs) {
+                                                if (retvar.name == defretvarname) {
+                                                    retval.type = retvar.valib.type;
+                                                    retval.value = retvar.valib.value;
+                                                } state.addVariable(retvar);
+                                            } 
+                                        }
+                                        
+                                    }
+                                    else{
+                                        while (state.getVariable(varname) && state.getVariable(varname)->valib.va_ap && state.getVariable(varname)->valib.value == AP__KRR){
+                                            urwerer cp_state = state;
+                                            kairrer_tpr ktpr(tokensrunvs, cp_state);
+                                            retval.rargs = ktpr.prun(runvalue.rargs);
+                                            for (auto retvar : retval.rargs) {
+                                                if (retvar.name == defretvarname) {
+                                                    retval.type = retvar.valib.type;
+                                                    retval.value = retvar.valib.value;
+                                                } state.addVariable(retvar);
+                                            } 
+                                        }
+                                        
+                                    }
+                                }
+                               
+                                
                             }
-                            
+                            else return folib("VALUE et fo eplist ret <runV> ");
                         }
-                        else return folib("VALUE et fo eplist ret <runV> ");
                     }
+                    
+
+                    
                 }
+                
             
                 
-                return retval; // ?(only)
+                return retval; // ?( actVar )
             }
 
 
@@ -568,26 +621,28 @@ class kairrer_tpr {
             cret();
             skipTAB();
             
-            if (vadap(CE)){
-                cret();skipTAB();
-                value runvalue = lixtVALUE();
-                if(retval.va_ap&&retval.value == AP__KRR){
-                    if (runvalue.type==VSID::runV){
-                        std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
-                        urwerer cp_state = state;
-                        kairrer_tpr ktpr(tokensrunvs, cp_state);
-                        retval.type = runV;
-                        retval.rargs = ktpr.prun(runvalue.rargs);
-                        for (auto retvar : retval.rargs) {
-                            if (retvar.name == defretvarname) {
-                                retval.type = retvar.valib.type;
-                                retval.value = retvar.valib.value;
+            if (vadap(CE)||esValue()){
+                if(vadap(GE) || vadap(CE)){
+                    if (vadap(CE))cret();
+                    skipTAB();
+                    value runvalue = lixtVALUE();
+                    if(retval.va_ap&&retval.value == AP__KRR){
+                        if (runvalue.type==VSID::runV){
+                            std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
+                            urwerer cp_state = state;
+                            kairrer_tpr ktpr(tokensrunvs, cp_state);
+                            retval.type = runV;
+                            retval.rargs = ktpr.prun(runvalue.rargs);
+                            for (auto retvar : retval.rargs) {
+                                if (retvar.name == defretvarname) {
+                                    retval.type = retvar.valib.type;
+                                    retval.value = retvar.valib.value;
+                                } state.addVariable(retvar);
                             }
-                            state.addVariable(retvar);
+                            
                         }
-                        
+                        else return folib("VALUE et fo eplist ret <runV> ");
                     }
-                    else return folib("VALUE et fo eplist ret <runV> ");
                 }
             }
         
@@ -875,6 +930,7 @@ class kairrer_tpr {
         state.addVariable(retvar);
         return retvar;
     }
+    
 
     vars        varWer(){
         vars varlib;
@@ -907,8 +963,7 @@ class kairrer_tpr {
                         if (retvar.name == defretvarname) {
                             varlib.valib.type = retvar.valib.type;
                             varlib.valib.value = retvar.valib.value;
-                        }
-                        state.addVariable(retvar);
+                        } state.addVariable(retvar);
                     }
     
                     if (vasavemy && saveToState) state.addVariable(varlib);
@@ -1396,8 +1451,7 @@ class kairrer_tpr {
                     if (retvar.name == defretvarname) {
                         varlib.valib.type = retvar.valib.type;
                         varlib.valib.value = retvar.valib.value;
-                    }
-                    state.addVariable(retvar);
+                    } state.addVariable(retvar);
                 }
             
             };
@@ -1513,7 +1567,6 @@ class kairrer_tpr {
         for (TOKENS newtoken:newtokens) tokens.insert(tokens.begin() + vap, newtoken);
     }
     
-    
     public:
     kairrer_tpr(const std::vector<TOKENS>& tokens, urwerer& state) : 
         tokens(tokens), state(state), asmcode(state),
@@ -1540,10 +1593,10 @@ class kairrer_tpr {
                 else if (vadap(TSID::SY))     addLiber(state.lixtLiber(lixtPathLiber()));
                 
                 //va
-                else if (vadap(TSID::VA))  lixtESVA();
+                else if (vadap(TSID::VA))  lixtESVA(vaneWerTenESVA::FENER);
 
                 //comes
-                else if (dapin(TSID::DREB))   {skipTAB(); if(dapin(CE)){skipTAB();if(vadap(STRING)){state.removeVariable(varWer().name); } skipLINE(); }else skipLINE(); }
+                else if (dapin(TSID::DREB))   {skipTAB(); if(dapin(CE)){skipTAB();if(vadap(STRING)){state.removeVariable(varWer().name); } skipLINE(); }else if(vadap(PE)){lift();lixtESVA(vaneWerTenESVA::CINCIO);} else skipLINE(); }
                 else if (dapin(TSID::DYR) && lift().type==TSID::DYR) skipLINE();
                 //excutes
                 else if (dapin(TSID::DIG) && lift().type==TSID::DIG) std::cout<<state.executeCommand(lixtShell());

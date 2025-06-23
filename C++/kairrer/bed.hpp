@@ -28,8 +28,8 @@
 #include "lib/rmc.hpp"
 
 #define NULL_STR ""
-#define VERSION_CODE__KRR 14
-#define VERSION_NAME__KRR "0.1.2"
+#define VERSION_CODE__KRR 16
+#define VERSION_NAME__KRR "0.1.3"
 
 
 
