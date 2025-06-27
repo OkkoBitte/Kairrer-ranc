@@ -1,7 +1,8 @@
 
-const std::set<char> spec_sims = {'?','!','=','/','#', '~', ':' ,'.', '\'' ,'"' , '(', ')' , '[' , ']' , '{' , '}' , '<' , '>' , '_',' ','-','+','*', '@', '\n' , ';' };
+const std::set<char> spec_sims = {'$','?','!','=','/','#', '~', ':' ,'.', '\'' ,'"' , '(', ')' , '[' , ']' , '{' , '}' , '<' , '>' , '_',' ','-','+','*', '@', '\n' , ';' };
 
 enum TSID{
+    TRIG,
     VA, NDEK, DEZ,
     SY, DREB, DYR, TAK,
     BEDTAK, STRING, INT, INGOR, ZCEL,
@@ -26,6 +27,7 @@ class SIMS{
 public:
     static char get_sim_from_name(TSID sname){
         switch(sname){
+            case TSID::TRIG:   return SIMS::TRIG;
             case TSID::VA:     return SIMS::VA;
             case TSID::DEZ:    return SIMS::DEZ;
             case TSID::NDEK:   return SIMS::NDEK;
@@ -58,6 +60,7 @@ public:
     
     static TSID get_name_from_sim(char c){
         switch (c){
+            case SIMS::TRIG:   return TSID::TRIG;
             case SIMS::VA:     return TSID::VA;
             case SIMS::DEZ:    return TSID::DEZ;
             case SIMS::NDEK:   return TSID::NDEK;
@@ -90,38 +93,40 @@ public:
     
     static std::string get_sname_from_sim(char c){
         switch (c){
-            case SIMS::VA: return "<VA>";
-            case SIMS::DEZ: return "<DEZ>";
-            case SIMS::NDEK: return "<NDEK>";
-            case SIMS::DYR: return "<DYR>";
-            case SIMS::SY: return "<SY>";
-            case SIMS::DREB: return "<DREB>";
+            case SIMS::TRIG:   return "<TRIG>";
+            case SIMS::VA:     return "<VA>";
+            case SIMS::DEZ:    return "<DEZ>";
+            case SIMS::NDEK:   return "<NDEK>";
+            case SIMS::DYR:    return "<DYR>";
+            case SIMS::SY:     return "<SY>";
+            case SIMS::DREB:   return "<DREB>";
             case SIMS::BEDTAK: return "<BEDTAK>";
-            case SIMS::TAK: return "<TAK>";
-            case SIMS::S: return "<S>";
-            case SIMS::SS: return "<SS>";
-            case SIMS::PE: return "<PE>";
-            case SIMS::PU: return "<PU>";
-            case SIMS::DE: return "<DE>";
-            case SIMS::DU: return "<DU>";
-            case SIMS::GE: return "<GE>";
-            case SIMS::GU: return "<GU>";
-            case SIMS::CE: return "<CE>";
-            case SIMS::CU: return "<CU>";
-            case SIMS::DIG: return "<DIG>";
-            case SIMS::TAB: return "<TAB>";
-            case SIMS::LINK: return "<LINK>";
-            case SIMS::ZIG: return "<ZIG>";
-            case SIMS::SI: return "<SI>";
-            case SIMS::SPI: return "<SPI>";
-            case SIMS::INGOR: return "<INGOR>";
-            case SIMS::ZCEL: return "<ZCEL>";        }
+            case SIMS::TAK:    return "<TAK>";
+            case SIMS::S:      return "<S>";
+            case SIMS::SS:     return "<SS>";
+            case SIMS::PE:     return "<PE>";
+            case SIMS::PU:     return "<PU>";
+            case SIMS::DE:     return "<DE>";
+            case SIMS::DU:     return "<DU>";
+            case SIMS::GE:     return "<GE>";
+            case SIMS::GU:     return "<GU>";
+            case SIMS::CE:     return "<CE>";
+            case SIMS::CU:     return "<CU>";
+            case SIMS::DIG:    return "<DIG>";
+            case SIMS::TAB:    return "<TAB>";
+            case SIMS::LINK:   return "<LINK>";
+            case SIMS::ZIG:    return "<ZIG>";
+            case SIMS::SI:     return "<SI>";
+            case SIMS::SPI:    return "<SPI>";
+            case SIMS::INGOR:  return "<INGOR>";
+            case SIMS::ZCEL:   return "<ZCEL>";        }
         return "<FATER>";
     }
     static std::string get_sname_from_name(TSID t){
         switch (t){
+            case TSID::TRIG:   return "[TRIG]";
             case TSID::VA:     return "[VA]";
-            case TSID::DEZ:     return "[DEZ]";
+            case TSID::DEZ:    return "[DEZ]";
             case TSID::NDEK:   return "[NDEK]";
             case TSID::DYR:    return "[DYR]";
             case TSID::SY:     return "[SY]";
@@ -155,6 +160,7 @@ public:
         }
     }
     static bool is_special_char(char s) {return spec_sims.find(s) != spec_sims.end();}
+    const static char TRIG   = '$';
     const static char VA     = '?';
     const static char DEZ    = '!';    
     const static char NDEK   = '=';

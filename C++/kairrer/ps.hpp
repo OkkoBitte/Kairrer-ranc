@@ -849,6 +849,8 @@ class kairrer_tpr {
                 log.krr("fatneir wer <+,+>  ten ret <runV> "+line_pin());    
                 retvar.valib.va_ap =false;
             }
+            vurf = retvar;
+            state.addVariable(vurf);
         }
         else if (vawer == CE_SPI) { // <+
             
@@ -880,6 +882,8 @@ class kairrer_tpr {
                 log.krr("fatneir wer <+,+>  ten ret 'runV' "+line_pin());
                 retvar.valib.va_ap =false;
             }
+            veif = retvar;
+            state.addVariable(vurf);
         }
     
         else if(vawer == CU_SI) {// ->
@@ -963,7 +967,7 @@ class kairrer_tpr {
                         if (retvar.name == defretvarname) {
                             varlib.valib.type = retvar.valib.type;
                             varlib.valib.value = retvar.valib.value;
-                        } state.addVariable(retvar);
+                        }// state.addVariable(retvar);
                     }
     
                     if (vasavemy && saveToState) state.addVariable(varlib);
@@ -1451,7 +1455,7 @@ class kairrer_tpr {
                     if (retvar.name == defretvarname) {
                         varlib.valib.type = retvar.valib.type;
                         varlib.valib.value = retvar.valib.value;
-                    } state.addVariable(retvar);
+                    } //state.addVariable(retvar);
                 }
             
             };
@@ -1547,14 +1551,52 @@ class kairrer_tpr {
        
             if(varh){
                 varlib.valib=varh->valib;
-                varlib.valib=varh->valib;
+                
             }
             else {
                 varlib.valib.type=nullV;
+                varlib.valib.value=NULL_STR;
+                varlib.valib.va_ap = false;
             };
         }            
         return varlib;
     }
+    
+    void        trigWer(){
+        cret();
+        if (vadap(PE)){
+            cret();
+            if (vadap(STRING)){
+                std::string tvar_name = lixtSTRINT();
+                if(vadap(PU)){
+                    cret();skipTAB();
+                    if(vadap(CE))  { cret(); skipTAB(); }
+                    value tigwerer = lixtVALUE();
+                    if(tigwerer.type == VSID::runV){
+                        auto tvar = state.getVariable(tvar_name);
+                        if(tvar){
+                            vars ntvar;
+                            ntvar.name = tvar_name;
+                            ntvar.valib = tvar->valib;
+                            ntvar.valib.trig.esTrig = true;
+                            ntvar.valib.trig.run = tigwerer.value;
+                            
+                            state.addVariable(ntvar);
+                        }
+            
+             
+                    }
+                    else log.krr("ten wer-trig juner");
+                    
+
+                    
+                }
+                else log.fkr("TRIG","un drit et sim ')' "+line_pin()); 
+            }
+            else log.fkr("TRIG","junen var, fozil kamin sim '"+lixt().value+"' "+line_pin());
+        }
+        else log.fkr("TRIG","junen kamen sim '(' ten lixt var "+line_pin());
+    };
     std::string lixtPathLiber(){
         cret();
         value vall= lixtVALUE();
@@ -1594,7 +1636,8 @@ class kairrer_tpr {
                 
                 //va
                 else if (vadap(TSID::VA))  lixtESVA(vaneWerTenESVA::FENER);
-
+                // trig
+                else if (vadap(TSID::TRIG)) trigWer();
                 //comes
                 else if (dapin(TSID::DREB))   {skipTAB(); if(dapin(CE)){skipTAB();if(vadap(STRING)){state.removeVariable(varWer().name); } skipLINE(); }else if(vadap(PE)){lift();lixtESVA(vaneWerTenESVA::CINCIO);} else skipLINE(); }
                 else if (dapin(TSID::DYR) && lift().type==TSID::DYR) skipLINE();

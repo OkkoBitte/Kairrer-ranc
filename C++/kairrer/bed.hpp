@@ -55,21 +55,26 @@ std::string get_sname_from_vname(VSID VNAME){
 }
 bool is_valid_descriptor(int fd) { return fcntl(fd, F_GETFD) != -1 || errno != EBADF; }
 
+struct trigs {
+    bool esTrig = false;
+    std::string run;
+};
+
 struct vars;
+
 struct value {
     VSID type;
     std::string value;
 
-    bool va_ap = true; // ?(var)
-    std::vector<vars> rargs; 
+    bool va_ap = true;       // ?(var)
+    std::vector<vars> rargs; // {} <- vars
+    trigs trig;              // $(var)
 };
 
 struct vars {
     std::string name;
     value valib;
 };
-
-
 
 
 class urwerer {
@@ -86,7 +91,32 @@ public:
     };
     urwerer() : logger(*this) {} 
     LOG logger;
-    void addVariable(const vars& var) { variables[var.name] = var; }
+    void addVariable(const vars& var) {
+        auto linhvar = getVariable(var.name);
+        
+        if(linhvar && linhvar->valib.value == var.valib.value && linhvar->valib.type == var.valib.type) return;
+        
+        vars scamvars = var;
+        
+        if(linhvar) {
+           
+            if(!var.valib.trig.esTrig) { 
+                scamvars.valib.trig = linhvar->valib.trig; 
+            }
+            variables[var.name] = scamvars;
+        } else {
+            variables[var.name] = var;
+        }
+        
+        
+        if(scamvars.valib.trig.esTrig) {
+            std::string code = scamvars.valib.trig.run;
+            std::vector<TOKENS> tokensrunvs = tokenizer(code);
+            #include "ps.hpp"
+            kairrer_tpr ktpr(tokensrunvs, *this);
+            ktpr.prun({});
+        }
+    }
     std::optional<vars> getVariable(const std::string& name) const {
         auto it = variables.find(name);
         return it != variables.end() ? std::optional(it->second) : std::nullopt;
