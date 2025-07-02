@@ -28,8 +28,8 @@
 #include "lib/rmc.hpp"
 
 #define NULL_STR ""
-#define VERSION_CODE__KRR 16
-#define VERSION_NAME__KRR "0.1.3"
+#define VERSION_CODE__KRR 20
+#define VERSION_NAME__KRR "0.1.5"
 
 
 
@@ -69,11 +69,23 @@ struct value {
     bool va_ap = true;       // ?(var)
     std::vector<vars> rargs; // {} <- vars
     trigs trig;              // $(var)
+
+    bool operator==(const struct value& other) const {
+        return type == other.type && 
+               value == other.value && 
+               va_ap == other.va_ap && 
+               rargs == other.rargs && 
+               trig.esTrig == other.trig.esTrig && 
+               trig.run == other.trig.run;
+    }
 };
 
 struct vars {
     std::string name;
     value valib;
+    bool operator==(const vars& other) const {
+        return name == other.name && valib == other.valib;
+    }
 };
 
 
@@ -93,22 +105,12 @@ public:
     LOG logger;
     void addVariable(const vars& var) {
         auto linhvar = getVariable(var.name);
-        
-        if(linhvar && linhvar->valib.value == var.valib.value && linhvar->valib.type == var.valib.type) return;
-        
+        if(linhvar && (value)linhvar->valib == (value)var.valib) return;
         vars scamvars = var;
-        
         if(linhvar) {
-           
-            if(!var.valib.trig.esTrig) { 
-                scamvars.valib.trig = linhvar->valib.trig; 
-            }
+            if(!var.valib.trig.esTrig) scamvars.valib.trig = linhvar->valib.trig; 
             variables[var.name] = scamvars;
-        } else {
-            variables[var.name] = var;
-        }
-        
-        
+        } else variables[var.name] = var;
         if(scamvars.valib.trig.esTrig) {
             std::string code = scamvars.valib.trig.run;
             std::vector<TOKENS> tokensrunvs = tokenizer(code);
