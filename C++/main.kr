@@ -1,9 +1,9 @@
-~"libkr/io";
+~"C++/libkr/io";
 # krr 0.1.5
 
 filename : "test"
 
-$(filename) { print "update text 'test' to '@filename'"; }
+$(filename) { __echo "update text 'test' to '@filename'";__ }
 
 
 testy: fwrite < filename **;                       
@@ -18,8 +18,8 @@ resultOpen > textFile;
 
 print "@textFile";                               
 
-~"libkr/hello"
-~"libkr/tcc"
+~"C++/libkr/hello"
+~"C++/libkr/tcc"
 
 
 intValue : 1234            ;
@@ -36,24 +36,27 @@ stringSize  : stringValue.mac    ;
 stringDesc  : "Name : @stringName ; Type : @stringType ; Value : @stringValue ; Size : @stringSize" ;
 
 
-print < argument : intDesc *;
-print < argument : stringDesc *;
+__echo "@intDesc";__
+__echo "@stringDesc";__
 
 
 int1: 10;
 int2: 20;
 resultSumInts:int1 <+ int2;
 
-print "Result @int1 + @int2 = @resultSumInts";
+__echo  "Result @int1 + @int2 = @resultSumInts";__
 
 
-?(AP ?= FO) < {} // fo werun
-?AP < { __ echo TRUE!__ } // werap
+?(AP ?= FO) < {}        // fo werun
+?AP < { __echo "TRUE!"__ } // werap
 
 sync:AP;
 numfor:0;
+
 #(sync){
-   ?(numfor?=3){sync:FO}
-    filename:filename<+numfor;
-    numfor:numfor<+numfor;
+   
+    filename : "filename@numfor";
+    numfor : numfor <+ 1;
+    __echo  "@numfor"__
+    ?(numfor ?=3 ){ sync:FO }
 }
