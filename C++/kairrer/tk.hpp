@@ -1,11 +1,12 @@
 
-const std::set<char> spec_sims = {'$','?','!','=','/','#', '~', ':' ,'.', '\'' ,'"' , '(', ')' , '[' , ']' , '{' , '}' , '<' , '>' , '_',' ','-','+','*', '@', '\n' , ';' };
+const std::set<char> spec_sims = {'$','?','!','=','/','#', '~', ':' ,'.',',', '\'' ,'"' , '(', ')' , '[' , ']' , '{' , '}' , '<' , '>' , '_',' ','-','+','*', '@', '\n' , ';' };
 
 enum TSID{
     TRIG,
     VA, NDEK, DEZ,
     SY, DREB, DYR, TAK,
     BEDTAK, STRING, INT, INGOR, ZCEL,
+    CYI,
     S, SS,
     PE, PU,
     DE, DU,
@@ -36,6 +37,7 @@ public:
             case TSID::DREB:   return SIMS::DREB;
             case TSID::BEDTAK: return SIMS::BEDTAK;
             case TSID::TAK:    return SIMS::TAK;
+            case TSID::CYI:    return SIMS::CYI;
             case TSID::S:      return SIMS::S;
             case TSID::SS:     return SIMS::SS;  
             case TSID::PE:     return SIMS::PE;
@@ -69,6 +71,7 @@ public:
             case SIMS::DREB:   return TSID::DREB;
             case SIMS::BEDTAK: return TSID::BEDTAK;
             case SIMS::TAK:    return TSID::TAK;
+            case SIMS::CYI:    return TSID::CYI;
             case SIMS::S:      return TSID::S;
             case SIMS::SS:     return TSID::SS;
             case SIMS::PE:     return TSID::PE;
@@ -102,6 +105,7 @@ public:
             case SIMS::DREB:   return "<DREB>";
             case SIMS::BEDTAK: return "<BEDTAK>";
             case SIMS::TAK:    return "<TAK>";
+            case SIMS::CYI:    return "<CYI>";
             case SIMS::S:      return "<S>";
             case SIMS::SS:     return "<SS>";
             case SIMS::PE:     return "<PE>";
@@ -133,6 +137,7 @@ public:
             case TSID::DREB:   return "[DREB]";
             case TSID::BEDTAK: return "[BEDTAK]";
             case TSID::TAK:    return "[TAK]";
+            case TSID::CYI:    return "[CYI]";
             case TSID::S:      return "[S]";
             case TSID::SS:     return "[SS]";  
             case TSID::PE:     return "[PE]";
@@ -169,6 +174,7 @@ public:
     const static char DREB   = '#';
     const static char BEDTAK = ':';
     const static char TAK    = '.';
+    const static char CYI    = ',';
     const static char S      = '\'';
     const static char SS     = '"';
     const static char PE     = '(';

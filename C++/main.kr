@@ -1,14 +1,10 @@
-~"C++/libkr/io";
-# krr 0.1.5
+~"libkr/io";
 
 filename : "test"
 
-$(filename) { __echo "update text 'test' to '@filename'";__ }
-
-
 testy: fwrite < filename **;                       
 
-testy < "uint64_dddt" ;                           
+testy < "uint64_data" ;                           
 
 fclose < desc : testy *;                           
 
@@ -16,16 +12,16 @@ resultOpen : fread < filename **;
 
 resultOpen > textFile;                             
 
-print "@textFile";                               
+__echo @textFile__                               
 
-~"C++/libkr/hello"
-~"C++/libkr/tcc"
+~"libkr/hello"
+~"libkr/tcc"
 
 
 intValue : 1234            ;
 intName  : intValue.sidant ;
 intType  : intValue.ret    ;
-intSize  : intValue.mac    ;
+intSize  : intValue.mac ;
 intDesc  : "Name : @intName ; Type : @intType ; Value : @intValue ; Size : @intSize" ;
 
 
@@ -36,27 +32,17 @@ stringSize  : stringValue.mac    ;
 stringDesc  : "Name : @stringName ; Type : @stringType ; Value : @stringValue ; Size : @stringSize" ;
 
 
-__echo "@intDesc";__
-__echo "@stringDesc";__
+print < argument : intDesc *;
+print < argument : stringDesc *;
 
 
 int1: 10;
 int2: 20;
 resultSumInts:int1 <+ int2;
 
-__echo  "Result @int1 + @int2 = @resultSumInts";__
+__echo "Result @int1 + @int2 = @resultSumInts"__
 
 
-?(AP ?= FO) < {}        // fo werun
-?AP < { __echo "TRUE!"__ } // werap
-
-sync:AP;
-numfor:0;
-
-#(sync){
-   
-    filename : "filename@numfor";
-    numfor : numfor <+ 1;
-    __echo  "@numfor"__
-    ?(numfor ?=3 ){ sync:FO }
-}
+?(AP ?= FO) < {} // fo werun
+?AP < { __ echo TRUE!__ } // werap
+?("GAGA" ?= "GAGA") { __echo TRUE!__ }

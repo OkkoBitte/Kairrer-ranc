@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
         }
         else if(marg =="--vocem" || marg == "-vocem" || marg == "--v" || marg == "-v" ){
             std::cout<< "|[KRR][VOCEM]|"<<std::endl<<"Version Code " <<VERSION_CODE__KRR << std::endl<<
-            "Version Name " <<VERSION_NAME__KRR<< std::endl<<std::endl<<
+            "Version Name " <<VERSION_NAME__KRR<< std::endl<< "Version Type "<< VERISON_TYPE__KRR<< std::endl<<std::endl<<
             "More " << "https://web-mbg.ru"<<std::endl;
             return 0;
         }

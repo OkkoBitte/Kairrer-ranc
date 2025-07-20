@@ -28,11 +28,11 @@
 #include "lib/rmc.hpp"
 
 #define NULL_STR ""
-#define VERSION_CODE__KRR 20
+#define VERSION_CODE__KRR 22
 #define VERSION_NAME__KRR "0.1.5"
+#define VERISON_TYPE__KRR "RELEASE"
 
-
-
+bool save_in = false;
 
 static constexpr const char* defretvarname = "return";
 static constexpr const char* defargvarname = "argument";
@@ -64,8 +64,9 @@ struct vars;
 
 struct value {
     VSID type;
+    std::optional<std::string> vname;
     std::string value;
-
+    
     bool va_ap = true;       // ?(var)
     std::vector<vars> rargs; // {} <- vars
     trigs trig;              // $(var)
@@ -78,11 +79,16 @@ struct value {
                trig.esTrig == other.trig.esTrig && 
                trig.run == other.trig.run;
     }
+    
 };
 
 struct vars {
     std::string name;
     value valib;
+    void setName(std::string vname) {
+        name = vname;
+        valib.vname = vname; 
+    }
     bool operator==(const vars& other) const {
         return name == other.name && valib == other.valib;
     }
@@ -370,7 +376,7 @@ void urwerer::LOG::krr(std::string v) {
     if (vakair) {
         if (vakair->valib.value == FO__KRR) return;
     }
-    std::cerr << red << "|[KAIR] " << v << reset << std::endl;
+    std::cerr << red << "|[KAIR]" << v << reset << std::endl;
 }
 
 void urwerer::LOG::cev(std::string v) {
@@ -378,7 +384,7 @@ void urwerer::LOG::cev(std::string v) {
     if (vacev) {
         if (vacev->valib.value == FO__KRR) return;
     }
-    std::cerr << yellow << "|[CELEM] " << v << reset << std::endl;
+    std::cerr << yellow << "|[CEV] " << v << reset << std::endl;
 }
 
 void urwerer::LOG::fkr(std::string ut, std::string v) {

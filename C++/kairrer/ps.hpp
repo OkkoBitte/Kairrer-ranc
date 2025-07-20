@@ -78,7 +78,7 @@ class kairrer_tpr {
             }
             else value += cret().value;
         }
-        if (!dapin(TSID::SS)) log.fkr("SS","un drit et -> " + SIMS::get_sname_from_name(TSID::SS)+line_pin());
+        if (!dapin(TSID::SS)) log.fkr("SS","un drit et -> " + SIMS::get_sname_from_name(TSID::SS)+" "+lixt().value+line_pin());
         return value;
     }
     std::string lixtGG() {
@@ -200,7 +200,8 @@ class kairrer_tpr {
             
             if (vadap(CE)){
                 cret();skipTAB();
-                value runvalue = lixtVALUE();
+                value runvalue;
+                lixtVALUE(runvalue);
                 if(vaFen){
                     if (runvalue.type==VSID::runV){
                         std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
@@ -229,8 +230,7 @@ class kairrer_tpr {
 
         return re_value;
     }
-    value       lixtVALUE(){
-        value vlib;
+    value       lixtVALUE(value &vlib){
         if(vadap(TSID::S)){
             vlib.type=VSID::stringV;
             vlib.value=lixtS();
@@ -246,7 +246,6 @@ class kairrer_tpr {
         
         else if( vadap(TSID::INT) ||  vadap(TSID::SI) ){
             vlib.type=VSID::intV;
-            // 0x
             vlib.value=lixtINT();
         }
         else if (vadap(TSID::VA)) vlib=lixtESVA(vaneWerTenESVA::FENER);
@@ -263,6 +262,67 @@ class kairrer_tpr {
         }
 
         else log.fkr("VALUE","fat ret ame value et -> '"+lixt().value+"' "+line_pin());
+
+        skipTAB();
+        if (!vadap(CYI)){
+            /* <,+,-; -; +;*/  if( (vadap(CE) && (lixtCret(1).type==SPI || lixtCret(1).type==SI)) || ((vadap(SI) || vadap(SPI)) && lixtCret(1).type==CU) ){ //  && (lift().type==SPI || lixt().type==SI )|| dapin(SI)  || vadap(SPI)
+                // VAR ACTIONS 
+                __vawer vawer;
+                auto givKair = [&](){ log.fkr("REWERBOS","gat sim ten wer: <+, <- vel +> ->; gat sim et -> "+lixt().value +" <- "+line_pin()); };
+                if (vadap(CE)){
+                        if(lixtCret (1).type==SPI ) vawer = __vawer::CE_SPI;  // <+
+                    else if(lixtCret (1).type==SI  ) vawer = __vawer::CE_SI;   // <- 
+                    else givKair();
+                }
+                else if(vadap(SPI) && lixtCret (1).type==CU) vawer =__vawer::CU_SPI; // +>
+                else if(vadap(SI)  && lixtCret (1).type==CU) vawer =__vawer::CU_SI;  // -> 
+                
+                else givKair();
+                cret();cret();
+                skipTAB();
+                // VAR TO VAR
+                
+                if (esValue()){
+                    value evalue = vlib;
+                    value rvalue;
+                    
+                    lixtVALUE(rvalue);
+                    reVarBos( vlib, evalue, rvalue, vawer);
+                }
+                else givKair();
+                
+            
+            }
+            /* > ; < */  else if ( vadap(CU) || vadap(CE) ){
+                // REWRITE VAR TO VAR
+                bool revers = false;
+                if(vadap(CE)) revers = true;
+                cret();
+                value donner = vlib;            
+                skipTAB();
+                
+                if(esValue()){
+                    value akcepter;
+                    lixtVALUE(akcepter);
+                    reVarWer(vlib, ( revers ? akcepter : donner ) , ( revers ? donner : akcepter ) ); 
+                    skipTAB();
+                    
+                    if(vlib.vname){
+                        vars advar = {*vlib.vname, vlib};
+                        state.addVariable(advar);
+                    }
+            
+                }
+                else if(vadap(DREB)){ if (vlib.vname) state.removeVariable(*vlib.vname);}
+
+                else log.krr("vah sim et -> "+lixt().value + " ten wer >,< "+line_pin());
+                
+
+            }
+        }else cret();
+        
+        
+
         return vlib;
     }
     
@@ -395,7 +455,7 @@ class kairrer_tpr {
                 varname = lixtVarLib.name;
                 eifvalue = lixtVarLib.valib;
             }
-            else eifvalue = lixtVALUE();  // ( >value1< ?= value2 )
+            else lixtVALUE(eifvalue);  // ( >value1< ?= value2 )
       
             skipTAB();
 
@@ -411,7 +471,7 @@ class kairrer_tpr {
                     if(vadap(GE) || vadap(CE)){
                         if (vadap(CE))cret();
                         skipTAB();
-                        value runvalue = lixtVALUE();
+                        value runvalue ; lixtVALUE(runvalue);
                         if(en_esva){
                             if (runvalue.type==VSID::runV){
                                 std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
@@ -494,7 +554,7 @@ class kairrer_tpr {
             skipTAB();
             // ( value1 ?= >value2< )  
 
-            if (esValue()) urfvalue = lixtVALUE();
+            if (esValue()) lixtVALUE(urfvalue);
             else return mfolib("vah sim  et -> '"+lixt().value+"'");
 
             if (vawer == vaesvawer::NDEK){ // AME
@@ -625,7 +685,7 @@ class kairrer_tpr {
                 if(vadap(GE) || vadap(CE)){
                     if (vadap(CE))cret();
                     skipTAB();
-                    value runvalue = lixtVALUE();
+                    value runvalue ; lixtVALUE(runvalue);
                     if(retval.va_ap&&retval.value == AP__KRR){
                         if (runvalue.type==VSID::runV){
                             std::vector<TOKENS> tokensrunvs = tokenizer(runvalue.value);
@@ -652,39 +712,38 @@ class kairrer_tpr {
 
         return retval;
     }
-    vars        reVarWer (vars donner, vars akcepter){
+    value       reVarWer(value &retval,value donner, value &akcepter){
         // akcepter < donner ;
         
         auto kairwer = [&](){
-            vars nullgatvar;
-            nullgatvar.valib.va_ap = false;
-            nullgatvar.valib.value = NULL_STR;
-            nullgatvar.valib.type  = nullV;
-            return nullgatvar;
+            akcepter.va_ap = false;
+            akcepter.value = NULL_STR;
+            akcepter.type  = nullV;
+            return akcepter;
         };
 
-        VSID donner_type = donner.valib.type;
-        VSID akcepter_type = akcepter.valib.type;
+        VSID donner_type = donner.type;
+        VSID akcepter_type = akcepter.type;
         
         if(akcepter_type == runV) {
-        
-            akcepter.valib.rargs.push_back( donner );
             
-            // if(donner_type==nullV){
-            //     log.krr("fatneir et sutun ret nullV ot runV " +line_pin());
-            // }
+            if(donner.vname){
+                vars pbvar = {*donner.vname, donner};
+                akcepter.rargs.push_back( pbvar );
+            }
+            else log.krr("fatneir et sutun var ret runV ot VALUE "+get_sname_from_vname(donner.type)+" "+line_pin());
         }
 
         else if(akcepter_type == stringV){
             if (donner_type == stringV){
-                akcepter.valib.value = donner.valib.value;
+                akcepter.value = donner.value;
             }
 
 
             else if(donner_type == intV) {
                 int descis;
                 try { 
-                    descis = atoi(donner.valib.value.c_str());
+                    descis = atoi(donner.value.c_str());
                 } catch(...) {
                     log.krr ("var intV fo eplis intV "+line_pin());
                     return kairwer();
@@ -712,14 +771,14 @@ class kairrer_tpr {
                     
                   
                     buffer[bytes_read] = '\0'; 
-                    akcepter.valib.type = stringV;
-                    akcepter.valib.value = std::string(buffer.data());
+                    akcepter.type = stringV;
+                    akcepter.value = std::string(buffer.data());
                     
                   
                     //std::cout << "Read " << bytes_read << " bytes from fd " << fd <<"And value"<<akcepter.valib.value<< std::endl;
                 }
                 else {
-                    akcepter.valib.value = donner.valib.value;
+                    akcepter.value = donner.value;
                 }
             }
 
@@ -737,19 +796,19 @@ class kairrer_tpr {
             if (donner_type == stringV){
                 int descis;
           
-                try{ descis = atoi(akcepter.valib.value.c_str());}catch(...){
+                try{ descis = atoi(akcepter.value.c_str());}catch(...){
                     log.krr("var intV fo eplis intV "+line_pin()); 
                     return kairwer();
                 }
                 if (is_valid_descriptor(descis)){
-                    int fd = atoi(akcepter.valib.value.c_str());
-                    akcepter.valib.type=intV;
-                    akcepter.valib.value=std::to_string(write(fd, donner.valib.value.c_str(), donner.valib.value.size()));
+                    int fd = atoi(akcepter.value.c_str());
+                    akcepter.type=intV;
+                    akcepter.value=std::to_string(write(fd, donner.value.c_str(), donner.value.size()));
                 }
                 else {log.krr("fatneir et sutun var ret stringV ot intV "+line_pin()); return kairwer();} 
             }
             else if(donner_type == intV){
-                akcepter.valib.value = donner.valib.value;
+                akcepter.value = donner.value;
             }
             else if(donner_type == runV){
                 log.fkr("RESUTUN","fatneir et sutun var ret runV ot stringV "+line_pin());
@@ -761,12 +820,13 @@ class kairrer_tpr {
         }
 
         else if(akcepter_type == nullV){
-            akcepter.valib.type = donner.valib.type;
-            akcepter.valib.value = donner.valib.value;
+            akcepter.type = donner.type;
+            akcepter.value = donner.value;
+
             if(donner_type==intV){
                 int descis;
                 try { 
-                    descis = atoi(donner.valib.value.c_str());
+                    descis = atoi(donner.value.c_str());
                 } catch(...) {
                     log.krr("var intV fo eplis intV "+line_pin());
                     return kairwer();
@@ -794,152 +854,268 @@ class kairrer_tpr {
                     
                   
                     buffer[bytes_read] = '\0'; 
-                    akcepter.valib.type = stringV;
-                    akcepter.valib.value = std::string(buffer.data());
+                    akcepter.type = stringV;
+                    akcepter.value = std::string(buffer.data());
                     
                   
                     //std::cout << "Read " << bytes_read << " bytes from fd " << fd <<"And value"<<akcepter.valib.value<< std::endl;
                 }
                 else {
-                    akcepter.valib.value = donner.valib.value;
+                    akcepter.value = donner.value;
                 }
 
             }
         }
         
-        if(akcepter.valib.type!=runV) state.addVariable(akcepter);
+        //if(akcepter.type!=runV) state.addVariable(akcepter);
+        retval = akcepter;
         return akcepter;
     }
-    vars        reVarBos(vars veif, vars vurf, __vawer vawer) {
-        vars retvar;
-        retvar.valib.type = nullV; 
-        retvar.valib.value = NULL_STR;
-    
-        VSID er = veif.valib.type;
-        VSID ur = vurf.valib.type;
+    value       reVarBos(value &retval, value veif, value vurf, __vawer vawer) {
+        retval.type = nullV; 
+        retval.value = NULL_STR;
+        //if(vawer == __vawer::CU_SI) std::cout<<"<++> eif:"<<(veif.vname?*veif.vname:"NEIN")<<";urf:"<<(vurf.vname?*vurf.vname:"NEIN")<<std::endl;
+        VSID er = veif.type;
+        VSID ur = vurf.type;
+        auto nullval_false = [&](){
+            retval.va_ap = false;
+            retval.type  = nullV;
+            retval.value = NULL_STR;
+        };
         
              if (vawer == CU_SPI) { // +> 
                 
                  if (er == nullV || ur == nullV) {
                 
-                retvar = (ur == nullV) ? veif : vurf;
+                retval = (ur == nullV) ? veif : vurf;
             }
             else if (er == intV && ur == intV) {
-                int result = atoi(veif.valib.value.c_str()) + atoi(vurf.valib.value.c_str());
-                retvar.valib.type = intV;
-                retvar.valib.value = std::to_string(result);
+                int result = atoi(veif.value.c_str()) + atoi(vurf.value.c_str());
+                retval.type = intV;
+                retval.value = std::to_string(result);
             }
             else if (er == intV && ur == stringV) {
-                retvar.valib.type = stringV;
-                retvar.valib.value = vurf.valib.value + veif.valib.value;
+                retval.type = stringV;
+                retval.value = veif.value+vurf.value;
             }
             else if (er == stringV && ur == intV) { 
-                retvar.valib.type = stringV;
-                retvar.valib.value = veif.valib.value + vurf.valib.value;
+                retval.type = stringV;
+                retval.value = veif.value + vurf.value;
             }
             else if (er == stringV && ur == stringV) {
-                retvar.valib.type = stringV;
-                retvar.valib.value = vurf.valib.value + veif.valib.value;
+                retval.type = stringV;
+                retval.value = veif.value+vurf.value;
             }
             else if (ur == runV) {
                 log.krr("fatneir wer <+,+>  ten ret 'runV' "+line_pin());
-                retvar.valib.va_ap =false;
+                nullval_false();
             }
             else if (er == runV) {
                 log.krr("fatneir wer <+,+>  ten ret <runV> "+line_pin());    
-                retvar.valib.va_ap =false;
+                nullval_false();
             }
-            vurf = retvar;
-            state.addVariable(vurf);
+            
+            if (vurf.vname && save_in){
+                vars retvar;
+                retvar.setName(*vurf.vname);
+                retvar.valib = retval;
+                state.addVariable(retvar);    
+            }
+            
+            
         }
         else if (vawer == CE_SPI) { // <+
             
                  if (er == nullV || ur == nullV) {
-                retvar = (er == nullV) ? vurf : veif;
+                retval = (er == nullV) ? vurf : veif;
             }
             else if (er == intV && ur == intV) {
-                int result = atoi(veif.valib.value.c_str()) + atoi(vurf.valib.value.c_str());
-                retvar.valib.type = intV;
-                retvar.valib.value = std::to_string(result);
+                int result = atoi(veif.value.c_str()) + atoi(vurf.value.c_str());
+                retval.type = intV;
+                retval.value = std::to_string(result);
             }
             else if (er == intV && ur == stringV) { // 
-                retvar.valib.type = stringV;
-                retvar.valib.value = veif.valib.value + vurf.valib.value;
+                retval.type = stringV;
+                retval.value = veif.value + vurf.value;
             }
             else if (er == stringV && ur == intV) {
-                retvar.valib.type = stringV;
-                retvar.valib.value = veif.valib.value + vurf.valib.value;
+                retval.type = stringV;
+                retval.value = veif.value + vurf.value;
             }
             else if (er == stringV && ur == stringV) {
-                retvar.valib.type = stringV;
-                retvar.valib.value = veif.valib.value + vurf.valib.value;
+                retval.type = stringV;
+                retval.value = veif.value + vurf.value;
             }
             else if (er == runV) {
                 log.krr("fatneir wer <+,+>  ten ret 'runV' "+line_pin());
-                retvar.valib.va_ap =false;
+                nullval_false();
             }
             else if (ur == runV) {
                 log.krr("fatneir wer <+,+>  ten ret 'runV' "+line_pin());
-                retvar.valib.va_ap =false;
+                nullval_false();
             }
-            veif = retvar;
-            state.addVariable(vurf);
+            
+            if (veif.vname && save_in){
+                vars retvar;
+                retvar.setName(*veif.vname);
+                retvar.valib = retval;
+                state.addVariable(retvar);    
+            }
         }
     
         else if(vawer == CU_SI) {// ->
-            auto envarlib=state.getVariable(veif.name);
-            if (!envarlib) {
-                log.krr("fo vanih hamu var '"+veif.name+"' ; ten wer '->' "+line_pin());
-                retvar.valib.va_ap =false;
-            }
-            std::string vanihetvarname = vurf.name;
-            bool vavanih=false;
-            for(auto varg : envarlib->valib.rargs){
-                if(varg.name==vanihetvarname){
+            
+            if (veif.vname && vurf.vname){
+        
+                std::string vanihetvarname = *vurf.vname;
+                bool vavanih=false;
+                for(auto varg : veif.rargs){
+                    if(varg.name==vanihetvarname){
+                        retval=varg.valib;
+                        vavanih=true;
+                        if (save_in) state.addVariable(varg);
+                    }
+                }
+                if(!vavanih) {
+                    log.krr("fovanih hamu var '"+vanihetvarname+"' ; ten wer '->'  ut var '"+*veif.vname+"' "+line_pin());
+                    nullval_false();
 
-                    retvar.valib=varg.valib;
-                    vavanih=true;
-                    
+                } 
+            }
+            
+            else if (er == nullV){
+                    log.krr("fatneir lixt lib ut var ret <nullV> " + line_pin());
+                    nullval_false();
+            }
+            else if (er == intV){
+                if (ur == intV){
+                    int result = atoi(veif.value.c_str()) - atoi(veif.value.c_str());
+                    retval.type = intV;
+                    retval.value = std::to_string(result);
+                }
+                else if (ur == stringV){
+                    log.krr("fatneir lixt lib et var ret <intV> ut var ret <stringV> "+line_pin());
+                    nullval_false();
+                }
+                else if (ur == runV){
+                    log.krr("fatneir lixt lib et var ret <intV> ut var ret <runV> "+line_pin());
+                    nullval_false();
                 }
             }
-            if(!vavanih) {
-                log.krr("fovanih hamu var '"+vanihetvarname+"' ; ten wer '->'  ut var '"+veif.name+"' "+line_pin());
-                retvar.valib.va_ap =false;
+            else if (er == stringV){
+                if (ur == intV){
+                    int index = std::stoi(vurf.value);
+                    std::string result;
+                    if (index < 0 || index >= veif.value.length()) {
+                        log.krr("fat lixten sim ut lik '"+(veif.vname?*veif.vname:"VALUE")+"' et sim "+vurf.value+" "+line_pin());
+                        nullval_false();
+                    }
+                    if (index == 0)result = veif.value;
+                    else result = veif.value[veif.value.length() - index]; 
+                    retval.type = stringV;
+                    retval.value = result;
+                }
+                else if (ur == stringV){
+                    std::string result;
+                    size_t pos = veif.value.find(vurf.value);
+                    if (pos != std::string::npos) result = veif.value.erase(pos, vurf.value.length());
+                    else result = veif.value;
+                    retval.type = stringV;
+                    retval.value = result;
+                }
+                else if (ur == runV){
+                    log.krr("fatneir lixt lib et var ret <intV> ut var ret <runV> "+line_pin());
+                    nullval_false();
+                }
             }
+            
+            
             
         }
         else if(vawer == CE_SI) {// <-
-           
-            auto envarlib=state.getVariable(vurf.name);
-            if (!envarlib) {
-                log.krr("fo vanih hamu var '"+vurf.name+"' ; ten wer '->' "+line_pin());
-                retvar.valib.va_ap =false;
-            }
-            std::string vanihetvarname = veif.name;
-            bool vavanih=false;
-            for(auto varg : envarlib->valib.rargs){
-                if(varg.name==vanihetvarname){
+            if (veif.vname && vurf.vname){
+        
+                std::string vanihetvarname = *veif.vname;
+                bool vavanih=false;
+                for(auto varg : vurf.rargs){
+                    if(varg.name==vanihetvarname){
 
-                    retvar.valib=varg.valib;
-                    vavanih=true;
-                    
+                        retval=varg.valib;
+                        vavanih=true;
+                        if (save_in) state.addVariable(varg);
+                        
+                    }
+                }
+                if(!vavanih) {
+                    log.krr("fovanih hamu var '"+vanihetvarname+"' ; ten wer '->'  ut var '"+*vurf.vname+"' "+line_pin());
+                    nullval_false();
                 }
             }
-            if(!vavanih) {
-                log.krr("fovanih hamu var '"+vanihetvarname+"' ; ten wer '->'  ut var '"+vurf.name+"' "+line_pin());
-                retvar.valib.va_ap =false;
+
+            if (er == nullV) {
+                    retval.type = nullV;
+                    retval.value = NULL_STR;
+                }
+            else if (er == intV) {
+                if (ur == intV) {
+                    
+                    int result = atoi(vurf.value.c_str()) - atoi(veif.value.c_str());
+                    retval.type = intV;
+                    retval.value = std::to_string(result);
+                }
+                else if (ur == stringV) {
+                    int index = std::stoi(veif.value);
+                    std::string result;
+                    if (index <= 0 || index > vurf.value.length()){ 
+                        log.krr("fat lixten sim ut VALUE '"+vurf.value+"' et var "+ veif.value +" "+line_pin());
+                        nullval_false();
+                        
+                    }
+                    if (index == 0)result = vurf.value;
+                    else result=vurf.value[index-1];
+                    retval.type = stringV;
+                    retval.value = result;
+                    
+                }
+                else if (ur == runV) {
+                    log.krr("fatneir lixt lib et var ret <intV> ut var ret <runV> "+line_pin());
+                    nullval_false();
+                }
+            }
+            else if (er == stringV) {
+                if (ur == intV) {
+                    log.krr("fatneir lixt lib et var ret <stringV> ut var ret <intV> " +line_pin());
+                    nullval_false();
+                }
+                else if (ur == stringV) {
+                    size_t pos = veif.value.rfind(vurf.value);
+                    std::string result = veif.value;
+                    if (pos != std::string::npos) {
+                        result.erase(pos, vurf.value.length());
+                    }
+                    retval.type = stringV;
+                    retval.value = result;
+                }
+                else if (ur == runV) {
+                    log.krr("fatneir lixt lib et var ret <stringV> ut var ret <runV> "+line_pin());
+                    nullval_false();
+                }
+            }
+            else if (er == runV) {
+                log.krr("fatneir reverbos ret <runV> ten wer VALUE "+line_pin());
+                nullval_false();
             }
         }
         
-        state.addVariable(retvar);
-        return retvar;
+        return retval;
     }
     
 
     vars        varWer(){
         vars varlib;
         std::string vname = lixtSTRINT();
-        varlib.name=vname;
+        varlib.setName(vname);
+        // std::cout<<"NWAR:"<<varlib.name<<";2name:"<<(varlib.valib.vname.has_value()? *varlib.valib.vname : "NEIN")<<std::endl;
         auto nullvar_false = [&](){
             vars nvar;
             nvar.valib.va_ap = false;
@@ -986,459 +1162,15 @@ class kairrer_tpr {
             cret();
             skipTAB();
             
-            varlib.valib = lixtVALUE();
+            lixtVALUE(varlib.valib);
             state.addVariable(varlib);
         }
-        
 
-        /* <,+,-; -; +;*/  else if( (vadap(CE) && (lixtCret(1).type==SPI || lixtCret(1).type==SI)) || ((vadap(SI) || vadap(SPI)) && lixtCret(1).type==CU) ){ //  && (lift().type==SPI || lixt().type==SI )|| dapin(SI)  || vadap(SPI)
-            // VAR ACTIONS 
-
-            __vawer vawer;
-            auto givKair = [&](){ log.fkr("REWERBOS","gat sim ten wer: <+, <- vel +> ->; gat sim et -> "+lixt().value +line_pin()); };
-            if (vadap(CE)){
-                     if(lixtCret (1).type==SPI ) vawer = __vawer::CE_SPI;  // <+
-                else if(lixtCret (1).type==SI  ) vawer = __vawer::CE_SI;   // <- 
-                else givKair();
-            }
-            else if(vadap(SPI) && lixtCret (1).type==CU) vawer =__vawer::CU_SPI; // +>
-            else if(vadap(SI)  && lixtCret (1).type==CU) vawer =__vawer::CU_SI;  // -> 
-            
-            else givKair();
-            cret();cret();
-            skipTAB();
-            // VAR TO VAR
-            /* urf-var */   if(vadap(STRING)){
-                std::string rvname = lixtSTRINT();
-                
-                auto veif = state.getVariable(vname);
-
-                vars vareif;
-                if(veif){
-                    vareif.name = veif->name;
-                    vareif.valib= veif->valib;
-                }else{
-                    vareif.name = vname;
-                    vareif.valib.type = VSID::nullV;
-                    vareif.valib.value= NULL_STR;
-                }
-                auto vurf = state.getVariable(rvname);
-
-                vars varurf;
-                if(vurf){
-                    varurf.name =vurf->name;
-                    varurf.valib=vurf->valib;
-                }else{
-                    varurf.name = rvname;
-                    varurf.valib.type = VSID::nullV;
-                    varurf.valib.value= NULL_STR;
-                }
-
-                varlib.valib = reVarBos(vareif, varurf, vawer).valib;
-            }
-            // VAR TO VALUE
-            /* urf-value */ else if(esValue()){
-                auto es_eifvar = state.getVariable(vname);
-                
-                vars eifvar;
-                eifvar.name = vname;
-
-                if (es_eifvar)  eifvar.valib = es_eifvar->valib;
-                else{
-                    eifvar.valib.type  = nullV;
-                    eifvar.valib.va_ap = NULL_STR; 
-                } 
-
-                value urfvalue = lixtVALUE();
-
-                VSID er = eifvar.valib.type;
-                VSID ur = urfvalue.type;
-                std::string evalue = eifvar.valib.value;
-                std::string uvalue = urfvalue.value;
-                     if (vawer == CU_SPI) { // +> 
-                    if (er == nullV || ur == nullV) varlib.valib = (ur == nullV) ? eifvar.valib : urfvalue;
-                    else if (er == intV){
-                        if(ur == intV){
-                            int result = atoi(evalue.c_str()) + atoi(uvalue.c_str());
-                            varlib.valib.type = intV;
-                            varlib.valib.value = std::to_string(result);
-                        }
-                        else if (ur == stringV){
-                            varlib.valib.type = stringV;
-                            varlib.valib.value = evalue+uvalue;
-                        }    
-                        else if (ur == runV){
-                            log.krr("fatneir reverbos ret <intV> et <runV> "+line_pin());
-                            varlib = nullvar_false();
-                        }
-    
-                    }
-                    else if (er == stringV){
-                        if (ur == intV){
-                            varlib.valib.type  = stringV;
-                            varlib.valib.value = evalue+uvalue;
-                        }        
-                        else if (ur == stringV){
-                            varlib.valib.type = stringV;
-                            varlib.valib.value = evalue+uvalue;
-                        }    
-                        else if (ur == runV){
-                            log.krr("fatneir reverbos ret <intV> et <runV> "+ line_pin());
-                            varlib = nullvar_false();
-                        }
-                         
-                    }
-                    else if (er == runV){
-                        log.krr("fatneir reverbos ret <runV> ten wer VALUE " + line_pin());
-                        varlib = nullvar_false();
-                    }
-                    
-                    
-                }
-                else if (vawer == CE_SPI) { // <+
-                    if (er == nullV || ur == nullV) varlib.valib = (ur == nullV) ? eifvar.valib : urfvalue;
-                    else if (er == intV){
-                        if(ur == intV){
-                            int result = atoi(evalue.c_str()) + atoi(uvalue.c_str());
-                            varlib.valib.type = intV;
-                            varlib.valib.value = std::to_string(result);
-                        }
-                        else if (ur == stringV){
-                            varlib.valib.type = stringV;
-                            varlib.valib.value = evalue+uvalue;
-                        }    
-                        else if (ur == runV){
-                            log.krr("fatneir reverbos ret <intV> et <runV> "+line_pin());
-                            varlib = nullvar_false();
-                            
-                        }
-    
-                    }
-                    else if (er == stringV){
-                        if (ur == intV){
-                            varlib.valib.type  = stringV;
-                            varlib.valib.value = evalue+uvalue;
-                           
-                        }        
-                        else if (ur == stringV){
-                            varlib.valib.type = stringV;
-                            varlib.valib.value = evalue+uvalue;
-                        }    
-                        else if (ur == runV){
-                            log.krr("fatneir reverbos ret <intV> et <runV> "+ line_pin());
-                            varlib = nullvar_false();
-                        }
-                         
-                    }
-                    else if (er == runV){
-                        log.krr("fatneir reverbos ret <runV> ten wer VALUE " + line_pin());
-                        varlib = nullvar_false();
-                    }
-                    
-                    
-                }
-                
-                else if(vawer == CU_SI) {   // ->
-                    if (er == nullV){
-                        log.krr("fatneir lixt lib ut var ret <nullV> " + line_pin());
-                        varlib = nullvar_false();
-                    }
-                    else if (er == intV){
-                        if (ur == intV){
-                            int result = atoi(evalue.c_str()) - atoi(uvalue.c_str());
-                            varlib.valib.type = intV;
-                            varlib.valib.value = std::to_string(result);
-                        }
-                        else if (ur == stringV){
-                            log.krr("fatneir lixt lib et var ret <intV> ut var ret <stringV> "+line_pin());
-                            varlib = nullvar_false();
-                        }
-                        else if (ur == runV){
-                            log.krr("fatneir lixt lib et var ret <intV> ut var ret <runV> "+line_pin());
-                            varlib = nullvar_false();
-                        }
-                    }
-                    else if (er == stringV){
-                        if (ur == intV){
-                            int index = std::stoi(uvalue);
-                            std::string result;
-                            if (index < 0 || index >= evalue.length()) {
-                                log.krr("fat lixten sim ut var '"+eifvar.name+"' et sim "+ uvalue+" "+line_pin());
-                                varlib = nullvar_false();
-                            }
-                            if (index == 0)result = evalue;
-                            else result = evalue[evalue.length() - index]; 
-                            varlib.valib.type = stringV;
-                            varlib.valib.value = result;
-                        }
-                        else if (ur == stringV){
-                            std::string result;
-                            size_t pos = evalue.find(uvalue);
-                            if (pos != std::string::npos) result = evalue.erase(pos, uvalue.length());
-                            else result = evalue;
-                            varlib.valib.type = stringV;
-                            varlib.valib.value = result;
-                        }
-                        else if (ur == runV){
-                            log.krr("fatneir lixt lib et var ret <intV> ut var ret <runV> "+line_pin());
-                            varlib = nullvar_false();
-                        }
-                    }
-                    else if (er == runV){
-                        log.krr("fatneir reverbos ret <runV> ten wer VALUE "+line_pin());
-                        varlib = nullvar_false();
-                    }
-                }
-              else if(vawer == CE_SI) { // <-
-                if (er == nullV) {
-                    varlib.valib.type = nullV;
-                    varlib.valib.value = NULL_STR;
-                }
-                else if (er == intV) {
-                    if (ur == intV) {
-                        
-                        int result = atoi(uvalue.c_str()) - atoi(evalue.c_str());
-                        varlib.valib.type = intV;
-                        varlib.valib.value = std::to_string(result);
-                    }
-                    else if (ur == stringV) {
-                        int index = std::stoi(evalue);
-                        std::string result;
-                        if (index <= 0 || index > uvalue.length()){ 
-                            log.krr("fat lixten sim ut VALUE '"+uvalue+"' et var "+ eifvar.name+" "+line_pin());
-                            varlib = nullvar_false();
-                            
-                        }
-                        if (index == 0)result = uvalue;
-                        else result=uvalue[index-1];
-                        varlib.valib.type = stringV;
-                        varlib.valib.value = result;
-                      
-                    }
-                    else if (ur == runV) {
-                        log.krr("fatneir lixt lib et var ret <intV> ut var ret <runV> "+line_pin());
-                        varlib = nullvar_false();
-                    }
-                }
-                else if (er == stringV) {
-                    if (ur == intV) {
-                        log.krr("fatneir lixt lib et var ret <stringV> ut var ret <intV> " +line_pin());
-                        varlib = nullvar_false();
-                    }
-                    else if (ur == stringV) {
-                        size_t pos = evalue.rfind(uvalue);
-                        std::string result = evalue;
-                        if (pos != std::string::npos) {
-                            result.erase(pos, uvalue.length());
-                        }
-                        varlib.valib.type = stringV;
-                        varlib.valib.value = result;
-                    }
-                    else if (ur == runV) {
-                        log.krr("fatneir lixt lib et var ret <stringV> ut var ret <runV> "+line_pin());
-                        varlib = nullvar_false();
-                    }
-                }
-                else if (er == runV) {
-                    log.krr("fatneir reverbos ret <runV> ten wer VALUE "+line_pin());
-                    varlib = nullvar_false();
-                }
-            }
-
-            }
-        }
-
-        /* > ; < */   else if ( vadap(CU) || vadap(CE) ){
-            // REWRITE VAR TO VAR
-            bool revers = false;
-            if(vadap(CE)) revers = true;
-            cret();
-
-            vars donner;
-            auto envarlib=state.getVariable(vname);
-            if (!envarlib) {
-                log.cev("fo vanih et var '"+vname+"' ten wer '<,>' "+line_pin());
-                donner.valib = nullvar_false().valib;
-            }
-            else {
-                donner.name=envarlib->name;
-                donner.valib=envarlib->valib;
-            }
-            
-           
-            
-            skipTAB();
-            
-            if(vadap(STRING)){
-                vars akcepter  = varWer();
-                varlib.valib   = reVarWer( ( revers ? akcepter : donner ) , ( revers ? donner : akcepter ) ).valib; 
-                skipTAB();
-                if (vadap(ZIG)) verZIG(varlib, vname);
-            }
-            else if(vadap(DREB)) state.removeVariable(vname);
-
-            else{
-                // RIGHT DATA IS TYPE VALUE
-                if(revers){
-                    value donor_value=lixtVALUE();
-                    auto akcepter_type = donner.valib.type; // inper kamen akcepter
-                    auto    donner_type = donor_value.type;
-                    vars akcepter=donner;
-                    if(akcepter_type == runV) {
-        
-                        log.krr("fatneir et sutun ret fat-var ot runV "+line_pin());
-                        akcepter.valib = nullvar_false().valib;
-                    }
-                    else if(akcepter_type == stringV){
-                        if (donner_type == stringV){
-                            akcepter.valib.value = donor_value.value;
-                        }
-            
-            
-                        else if(donner_type == intV) {
-                            int descis;
-                            try { 
-                                descis = atoi(donor_value.value.c_str());
-                            } catch(...) {
-                                log.krr("var intV fo eplis intV " +line_pin());
-                                return nullvar_false();
-                            }
-                            if (is_valid_descriptor(descis)) {
-                                int fd = descis;
-                                
-                              
-                                struct stat file_stat;
-                                if(fstat(fd, &file_stat) == -1) {
-                                    log.krr("fo wer et lixt lib liber "+line_pin());
-                                    return nullvar_false();
-                                }
-                                off_t file_size = file_stat.st_size;
-                                
-                              
-                                std::vector<char> buffer(file_size + 1);
-                                
-                              
-                                ssize_t bytes_read = read(fd, buffer.data(), file_size);
-                                if(bytes_read == -1) {
-                                    log.krr("fo wer et sedel liber "+line_pin());
-                                    akcepter.valib = nullvar_false().valib;
-                                }
-                                
-                              
-                                buffer[bytes_read] = '\0'; 
-                                akcepter.valib.type = stringV;
-                                akcepter.valib.value = std::string(buffer.data());
-                                
-                              
-                                //std::cout << "Read " << bytes_read << " bytes from fd " << fd <<"And value"<<akcepter.valib.value<< std::endl;
-                            }
-                            else {
-                                akcepter.valib.value = donor_value.value;
-                            }
-                        }
-            
-            
-                        else if(donner_type == runV){
-                            log.krr("fatneir et sutun var ret runV ot stringV "+line_pin());
-                            akcepter.valib = nullvar_false().valib;
-                        }
-                        else if(donner_type == nullV){
-                            log.cev("stringV < nullV; fater wer "+line_pin());
-                            
-                        }
-                    }
-                    else if(akcepter_type == intV){
-                        if (donner_type == stringV){
-                            int descis;
-                            try{ descis = atoi(akcepter.valib.value.c_str());}catch(...){
-                                log.krr("var intV fo eplis intV "+line_pin());
-                                return nullvar_false();
-                            }
-                            if (is_valid_descriptor(descis)){
-                                akcepter.valib.type=intV;
-                                akcepter.valib.value=std::to_string(write(descis, donor_value.value.c_str(), donor_value.value.size()));
-                                //std::cout<<"<v>{ desc:"<<descis<<"; value:"<<donor_value.value.c_str()<<"; size:"<<donor_value.value.size()<<"; }"<<std::endl;
-                            }
-                            else {
-                                log.krr("fatneir et sutun var ret stringV ot intV "+line_pin());
-                                akcepter.valib=nullvar_false().valib;
-                            }
-                        }
-                        else if(donner_type == intV){
-                            akcepter.valib.value = donor_value.value;
-                        }
-                        else if(donner_type == runV){
-                            log.krr("fatneir et sutun var ret runV ot stringV "+line_pin());
-                            akcepter.valib=nullvar_false().valib;
-                        }
-                        else if(donner_type == nullV){
-                            log.cev("stringV < nullV; fater wer "+line_pin());
-                        }
-                    }
-            
-                    else if(akcepter_type == nullV){
-                        akcepter.valib.type = donor_value.type;
-                        akcepter.valib.value = donor_value.value;
-                        if(donner_type == intV) {
-                            int descis;
-                            try { 
-                                descis = atoi(donor_value.value.c_str());
-                            } catch(...) {
-                                log.krr("var intV fo eplis intV "+line_pin());
-                                return nullvar_false();
-                            }
-                            if (is_valid_descriptor(descis)) {
-                                int fd = descis;
-                                
-                              
-                                struct stat file_stat;
-                                if(fstat(fd, &file_stat) == -1) {
-                                    log.krr("fo wer et lixt lib liber "+line_pin());
-                                    return nullvar_false();
-                                }
-                                off_t file_size = file_stat.st_size;
-                                
-                              
-                                std::vector<char> buffer(file_size + 1);
-                                
-                              
-                                ssize_t bytes_read = read(fd, buffer.data(), file_size);
-                                if(bytes_read == -1) {
-                                    log.krr("fo wer et sedel liber "+line_pin());
-                                    akcepter.valib=nullvar_false().valib;
-                                }
-                                
-                              
-                                buffer[bytes_read] = '\0'; 
-                                akcepter.valib.type = stringV;
-                                akcepter.valib.value = std::string(buffer.data());
-                                
-                              
-                               // std::cout << "Read " << bytes_read << " bytes from fd " << fd <<"And value"<<akcepter.valib.value<< std::endl;
-                            }
-                            else {
-                                akcepter.valib.value = donor_value.value;
-                            }
-                        }
-
-
-                    }
-                    
-                    if(akcepter.valib.type!=runV) state.addVariable(akcepter);
-
-                    varlib = akcepter;  
-                }
-                else log.fkr("CE|CU","fat wer re-sutun et sim -> '"+lixt().value+"' "+line_pin());
-            }
-            
-
-        }
-       
         /* -; 0; '; " */ else if (vadap(SI) || vadap(INT) || vadap(S) || vadap(SS)){
             // SPLESH RUN FUNC
             vars newVar;
             newVar.name = defargvarname;
-            newVar.valib = lixtVALUE();
+            lixtVALUE(newVar.valib);
             
             auto varh = state.getVariable(vname);
             if(varh && varh->valib.type==runV){ 
@@ -1541,7 +1273,7 @@ class kairrer_tpr {
 
             }
             else{
-                log.krr("fo vanih et var -> "+vname+"; ten wer: ."+contextmenuname+" "+line_pin());
+                log.krr("fo vanih hamu var -> "+vname+"; ten wer: ."+contextmenuname+" "+line_pin());
                 varlib = nullvar_false();
             }
 
@@ -1550,13 +1282,15 @@ class kairrer_tpr {
             auto varh = state.getVariable(vname);
        
             if(varh){
-                varlib.valib=varh->valib;
+                varlib.valib = varh -> valib;
                 
             }
             else {
-                varlib.valib.type=nullV;
-                varlib.valib.value=NULL_STR;
+                varlib.setName(vname);
+                varlib.valib.type  = nullV;
+                varlib.valib.value = NULL_STR;
                 varlib.valib.va_ap = false;
+                
             };
         }            
         return varlib;
@@ -1571,7 +1305,7 @@ class kairrer_tpr {
                 if(vadap(PU)){
                     cret();skipTAB();
                     if(vadap(CE))  { cret(); skipTAB(); }
-                    value tigwerer = lixtVALUE();
+                    value tigwerer; lixtVALUE(tigwerer);
                     if(tigwerer.type == VSID::runV){
                         auto tvar = state.getVariable(tvar_name);
                         if(tvar){
@@ -1599,7 +1333,7 @@ class kairrer_tpr {
     };
     std::string lixtPathLiber(){
         cret();
-        value vall= lixtVALUE();
+        value vall; lixtVALUE(vall);
         if (vall.type==stringV)return vall.value;
         else log.fkr("LIXTPATHLIB","gat type et lixt liber, ~ <- ut string "+line_pin());
         return NULL_STR;
@@ -1628,7 +1362,7 @@ class kairrer_tpr {
         while (!vaZexc()) {
             try {
                 //var     
-                     if (vadap(TSID::STRING)) varWer();
+                     if (esValue()) {value enle; lixtVALUE(enle);}
                 // else if (esValue()){}
                 
                 //import
