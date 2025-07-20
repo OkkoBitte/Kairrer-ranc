@@ -29,7 +29,7 @@
 
 #define NULL_STR ""
 #define VERSION_CODE__KRR 22
-#define VERSION_NAME__KRR "0.1.5"
+#define VERSION_NAME__KRR "0.1.6"
 #define VERISON_TYPE__KRR "RELEASE"
 
 bool save_in = false;
