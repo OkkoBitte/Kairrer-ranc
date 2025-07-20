@@ -244,7 +244,7 @@ class kairrer_tpr {
             vlib.value=lixtGG();
         }
         
-        else if( vadap(TSID::INT) ||  vadap(TSID::SI) ){
+        else if( vadap(TSID::INT) ||  vadap(TSID::SI) && lixtCret(1).type != TSID::CU ){
             vlib.type=VSID::intV;
             vlib.value=lixtINT();
         }
@@ -262,16 +262,16 @@ class kairrer_tpr {
         }
 
         else log.fkr("VALUE","fat ret ame value et -> '"+lixt().value+"' "+line_pin());
-
         skipTAB();
+        
         if (!vadap(CYI)){
             /* <,+,-; -; +;*/  if( (vadap(CE) && (lixtCret(1).type==SPI || lixtCret(1).type==SI)) || ((vadap(SI) || vadap(SPI)) && lixtCret(1).type==CU) ){ //  && (lift().type==SPI || lixt().type==SI )|| dapin(SI)  || vadap(SPI)
                 // VAR ACTIONS 
                 __vawer vawer;
                 auto givKair = [&](){ log.fkr("REWERBOS","gat sim ten wer: <+, <- vel +> ->; gat sim et -> "+lixt().value +" <- "+line_pin()); };
                 if (vadap(CE)){
-                        if(lixtCret (1).type==SPI ) vawer = __vawer::CE_SPI;  // <+
-                    else if(lixtCret (1).type==SI  ) vawer = __vawer::CE_SI;   // <- 
+                         if(lixtCret (1).type==SPI ) vawer = __vawer::CE_SPI;        // <+
+                    else if(lixtCret (1).type==SI  ) vawer = __vawer::CE_SI;         // <- 
                     else givKair();
                 }
                 else if(vadap(SPI) && lixtCret (1).type==CU) vawer =__vawer::CU_SPI; // +>
@@ -989,7 +989,7 @@ class kairrer_tpr {
             }
             else if (er == intV){
                 if (ur == intV){
-                    int result = atoi(veif.value.c_str()) - atoi(veif.value.c_str());
+                    int result = atoi(veif.value.c_str()) - atoi(vurf.value.c_str());
                     retval.type = intV;
                     retval.value = std::to_string(result);
                 }
@@ -1166,7 +1166,7 @@ class kairrer_tpr {
             state.addVariable(varlib);
         }
 
-        /* -; 0; '; " */ else if (vadap(SI) || vadap(INT) || vadap(S) || vadap(SS)){
+        /* -; 0; '; " */ else if (vadap(SI) && lixtCret(1).type == TSID::INT || vadap(INT) || vadap(S) || vadap(SS)){
             // SPLESH RUN FUNC
             vars newVar;
             newVar.name = defargvarname;
