@@ -18,6 +18,14 @@ int main(int argc, char* argv[]) {
             "More " << "https://web-mbg.ru"<<std::endl;
             return 0;
         }
+        else if (marg == "--code" || marg == "-code"|| marg == "--c" || marg == "-c") {
+            std::string fullcode;
+            for (int i=2;i<argc;i++){
+                fullcode+=std::string(argv[i]);
+                if (i!=argc-1) fullcode+=' ';
+            }
+            code=fullcode;
+        }
         else{
             std::string filename = marg;
             if (!file::is_file(filename)){
