@@ -1,11 +1,12 @@
 
-const std::set<char> spec_sims = {'$','?','!','=','/','#', '~', ':' ,'.',',', '\'' ,'"' , '(', ')' , '[' , ']' , '{' , '}' , '<' , '>' , '_',' ','-','+','*', '@', '\n' , ';' };
+const std::set<char> spec_sims = {'$','?','!','|','=','/','#', '~', ':' ,'.',',', '\'' ,'"' , '(', ')' , '[' , ']' , '{' , '}' , '<' , '>' , '_',' ','-','+','*', '@', '\n' , ';' };
 
 enum TSID{
     TRIG,
     VA, NDEK, DEZ,
     SY, DREB, DYR, TAK,
     BEDTAK, STRING, INT, INGOR, ZCEL,
+    TONG,
     CYI,
     S, SS,
     PE, PU,
@@ -53,6 +54,7 @@ public:
             case TSID::ZIG:    return SIMS::ZIG;
             case TSID::SI:     return SIMS::SI;
             case TSID::SPI:    return SIMS::SPI;
+            case TSID::TONG:   return SIMS::TONG;
             case TSID::INGOR:  return SIMS::INGOR;
             case TSID::ZCEL:   return SIMS::ZCEL;
 
@@ -87,6 +89,7 @@ public:
             case SIMS::LINK:   return TSID::LINK;
             case SIMS::ZIG:    return TSID::ZIG;
             case SIMS::SI:     return TSID::SI;
+            case SIMS::TONG:   return TSID::TONG;
             case SIMS::SPI:    return TSID::SPI;
             case SIMS::INGOR:  return TSID::INGOR;
             case SIMS::ZCEL:   return TSID::ZCEL;
@@ -122,6 +125,7 @@ public:
             case SIMS::ZIG:    return "<ZIG>";
             case SIMS::SI:     return "<SI>";
             case SIMS::SPI:    return "<SPI>";
+            case SIMS::TONG:    return "<TONG>";
             case SIMS::INGOR:  return "<INGOR>";
             case SIMS::ZCEL:   return "<ZCEL>";        }
         return "<FATER>";
@@ -156,7 +160,7 @@ public:
             case TSID::SPI:    return  "[SPI]";
             case TSID::INGOR:  return "[INGOR]";
             case TSID::ZCEL:   return "[ZCEL]";
-
+            case TSID::TONG:   return "[TONG]";
             case TSID::STRING: return "[STRING]";
             case TSID::INT:    return "[INT]";
             case TSID::FATER:  return "[FATER]";
@@ -190,6 +194,7 @@ public:
     const static char SI     = '-';
     const static char SPI    = '+';
     const static char LINK   = '@';
+    const static char TONG   = '|';
     const static char ZIG    = '*';
     const static char INGOR  = '\n';
     const static char ZCEL   = ';';

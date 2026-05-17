@@ -2,14 +2,14 @@
 
 filename : "test"
 
-testy: fwrite < filename **;                       
+exampleWrite: fwrite < filename;                       
+resultWrite: exampleWrite*;
+resultWrite < "my exampleData!" ;                           
 
-testy < "uint64_data" ;                           
+fclose < desc : resultWrite *;                           
 
-fclose < desc : testy *;                           
-
-resultOpen : fread < filename **;                  
-
+exampleRead : fread < filename;                  
+resultOpen : exampleRead*;
 resultOpen > textFile;                             
 
 __echo @textFile__                               

@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <any>
 #include <sys/mman.h>
+#include <limits.h>
 
 #include "tk.hpp"
 #include "lib/tcc.hpp" // x
@@ -28,11 +29,16 @@
 #include "lib/rmc.hpp"
 
 #define NULL_STR ""
-#define VERSION_CODE__KRR 25
-#define VERSION_NAME__KRR "0.1.6"
-#define VERISON_TYPE__KRR "RELEASE"
+#define VERSION_CODE__KRR 27
+#define VERSION_NAME__KRR "0.1.8"
+#define VERISON_TYPE__KRR "DEBUG"
 
-bool save_in = false;
+bool VAR_SAVE_SELF = false;
+bool SEGMENT_OUT_ERR = false;
+
+bool EXT_ASM = true;
+bool EXT_SHELL = true;
+bool EXT_X86 = true;
 
 static constexpr const char* defretvarname = "return";
 static constexpr const char* defargvarname = "argument";
@@ -41,20 +47,27 @@ static constexpr const char* BIN__KRR      = "0";
 static constexpr const char* FO__KRR       = "-1";
 
 enum __vawer { CU_SPI , CU_SI, /* === */   CE_SPI , CE_SI};
-enum VSID{ stringV, runV, intV, nullV };
+enum VSID{ stringV, runV, intV, degV, nullV };
 
 std::string get_sname_from_vname(VSID VNAME){
     std::string return_vname="<fater>";
     
-    if     (VNAME == stringV)  return_vname = "<stringV>";
+    if     (VNAME == stringV)  return_vname = "<strV>";
     else if(VNAME == intV)     return_vname = "<intV>";
     else if(VNAME == runV)     return_vname = "<runV>";
-    else if(VNAME == nullV)    return_vname = "<nullV>";
+    else if(VNAME == degV)     return_vname = "<degV>";
+    else if(VNAME == nullV)    return_vname = "<nanV>";
 
     return return_vname;
 }
 bool is_valid_descriptor(int fd) { return fcntl(fd, F_GETFD) != -1 || errno != EBADF; }
-
+std::string get_current_directory() {
+    char buffer[PATH_MAX];
+    if (getcwd(buffer, sizeof(buffer)) != nullptr) {
+        return std::string(buffer);
+    }
+    return "";
+}
 struct trigs {
     bool esTrig = false;
     std::string run;
@@ -67,14 +80,16 @@ struct value {
     std::optional<std::string> vname;
     std::string value;
     
-    bool va_ap = true;       // ?(var)
-    std::vector<vars> rargs; // {} <- vars
-    trigs trig;              // $(var)
+    bool va_ap = true;               // ?(var)
+    std::vector<vars> rargs;         // {} <- vars
+    trigs trig;                      // $(var)
+    std::vector<struct value> degen; // var-var-var
 
     bool operator==(const struct value& other) const {
         return type == other.type && 
                value == other.value && 
                va_ap == other.va_ap && 
+               degen == other.degen &&
                rargs == other.rargs && 
                trig.esTrig == other.trig.esTrig && 
                trig.run == other.trig.run;
@@ -107,11 +122,14 @@ public:
         void cev(std::string v);
         void fkr(std::string ut, std::string v);
     };
-    urwerer() : logger(*this) {} 
+    urwerer() : logger(*this) {
+        thispath = get_current_directory();
+    } 
     LOG logger;
+    std::string thispath;
     void addVariable(const vars& var) {
         auto linhvar = getVariable(var.name);
-        if(linhvar && (value)linhvar->valib == (value)var.valib) return;
+        if(linhvar && (value)linhvar->valib == (value)var.valib) return; ///// THIS IS VAR
         vars scamvars = var;
         if(linhvar) {
             if(!var.valib.trig.esTrig) scamvars.valib.trig = linhvar->valib.trig; 
@@ -155,6 +173,7 @@ public:
     std::string executeCommand(const std::string& command) const {
         std::array<char, 128> buffer;
         std::string result;
+        if(!EXT_SHELL) return result;
         std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
         if (!pipe) throw std::runtime_error("Command execution failed: " + command);
         while (fgets(buffer.data(), buffer.size(), pipe.get())) result += buffer.data();
@@ -349,7 +368,7 @@ public:
 
                 enpin++;
             }
-            return ASM_Exec(intoLib);
+            return (EXT_ASM?ASM_Exec(intoLib):-1);
 
         }
 
@@ -361,7 +380,7 @@ public:
         
         void executeHex(const std::string& hexStr) { 
             try {
-                rmc::run(hexStr);
+                if(EXT_X86) rmc::run(hexStr);
             } catch(...) {
                 parent.logger.fkr("HR", "el kair ");
             }
@@ -372,15 +391,15 @@ public:
 };
 
 void urwerer::LOG::krr(std::string v) {
-    auto vakair = lixtwerrer.getVariable("givKair");
+    auto vakair = lixtwerrer.getVariable("kair");
     if (vakair) {
         if (vakair->valib.value == FO__KRR) return;
     }
-    std::cerr << red << "|[KAIR]" << v << reset << std::endl;
+    std::cerr << red << "|[KAIR]|["<< lixtwerrer.thispath<<"]" << v << reset << std::endl;
 }
 
 void urwerer::LOG::cev(std::string v) {
-    auto vacev = lixtwerrer.getVariable("givCev");
+    auto vacev = lixtwerrer.getVariable("cev");
     if (vacev) {
         if (vacev->valib.value == FO__KRR) return;
     }
